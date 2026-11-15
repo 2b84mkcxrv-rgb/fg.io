@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>变美风格测试 · 找到最适合你的样子</title>
+<style>
+:root{
+  --bg:#1b1219;--bg2:#0c080c;--rose:#e8a0ad;--rose2:#c96f80;
+  --champagne:#f0d9b8;--txt:#f8f0ec;--sub:#bca9a4;--line:rgba(232,160,173,.22);--card:rgba(255,255,255,.045);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  background:radial-gradient(1200px 820px at 50% -10%,#3a2430 0%,var(--bg) 46%,var(--bg2) 100%);
+  color:var(--txt);min-height:100vh;min-height:100dvh;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  -webkit-user-select:none;user-select:none;
+}
+#dust{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:36px 20px 46px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.view{display:none;animation:fade .45s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.seal-hero{width:94px;height:94px;margin:0 auto;border:3px solid var(--rose);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;position:relative;transform:rotate(-6deg);
+  box-shadow:0 0 0 5px rgba(232,160,173,.08),0 12px 32px -12px rgba(232,160,173,.7)}
+.seal-hero::after{content:"";position:absolute;inset:7px;border:1px dashed rgba(240,217,184,.6);border-radius:50%}
+.seal-hero span{font-family:"KaiTi","STKaiti",serif;font-size:52px;color:var(--champagne);line-height:1;transform:rotate(6deg)}
+.orn{font-size:12px;letter-spacing:5px;color:var(--rose);margin-top:22px;text-indent:5px;text-align:center}
+h1{font-size:clamp(26px,7.2vw,37px);line-height:1.4;margin:14px 0 0;font-weight:800;letter-spacing:1px;text-align:center;
+  background:linear-gradient(180deg,#fff3ea,#e8a0ad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.subtitle{font-size:14px;color:var(--sub);line-height:1.9;margin:14px 0 0;text-align:center}
+.hint{font-size:12px;color:#8f7d78;margin:10px 0 0;letter-spacing:1px;text-align:center}
+
+/* 上传区 */
+.up-zone{display:block;margin-top:26px;border:1.5px dashed rgba(232,160,173,.4);border-radius:18px;
+  padding:32px 18px;text-align:center;cursor:pointer;background:var(--card);transition:.2s;position:relative}
+.up-zone:hover{border-color:var(--rose);background:rgba(232,160,173,.06)}
+.up-zone .cam{font-size:38px;line-height:1}
+.up-zone .up-t{font-size:15px;color:var(--champagne);font-weight:600;margin-top:12px}
+.up-zone .up-s{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.6}
+.up-zone.has{border-style:solid;padding:0;overflow:hidden}
+.up-zone.has img{width:100%;max-height:260px;object-fit:cover;display:block}
+.up-zone .reup{position:absolute;top:10px;right:10px;font-size:11px;color:var(--champagne);
+  background:rgba(12,8,12,.72);border:1px solid var(--line);padding:6px 10px;border-radius:14px}
+.manual{margin-top:16px;display:none}
+.manual.on{display:block}
+.manual-t{font-size:12px;color:var(--sub);text-align:center;margin-bottom:9px}
+.manual-t:not(:first-child){margin-top:16px}
+.shape-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.shape-btn{font-size:12px;color:var(--champagne);border:1px solid var(--line);background:var(--card);
+  padding:8px 13px;border-radius:20px;cursor:pointer;transition:.18s}
+.shape-btn.on{background:rgba(232,160,173,.18);border-color:var(--rose);box-shadow:0 0 0 1px var(--rose) inset}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;padding:16px;border:none;border-radius:14px;
+  cursor:pointer;font-size:16px;font-weight:700;color:#3a1c22;letter-spacing:2px;margin-top:22px;
+  background:linear-gradient(135deg,#f6d3bf,#e392a0);box-shadow:0 14px 28px -12px rgba(227,146,160,.75);transition:.2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.ghost{background:rgba(255,255,255,.05);color:var(--champagne);box-shadow:none;border:1px solid var(--line);margin-top:11px}
+.link-btn{display:block;width:100%;text-align:center;font-size:12px;color:var(--sub);margin-top:14px;cursor:pointer;text-decoration:underline}
+.foot-note{text-align:center;font-size:11px;color:#8f7d78;margin-top:22px;line-height:1.8;letter-spacing:.5px}
+
+/* 扫描 */
+.scan-stage{margin:26px auto 0;width:100%;max-width:360px}
+.scan-frame{position:relative;width:100%;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#000}
+.scan-frame canvas{width:100%;display:block}
+.scan-line{position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--rose),transparent);
+  box-shadow:0 0 22px 3px rgba(232,160,173,.7);animation:scanmv 2.6s ease-in-out infinite}
+@keyframes scanmv{0%{top:2%}50%{top:96%}100%{top:2%}}
+.scan-frame .corner{position:absolute;width:22px;height:22px;border:2px solid rgba(240,217,184,.8)}
+.scan-frame .c1{top:8px;left:8px;border-right:0;border-bottom:0}
+.scan-frame .c2{top:8px;right:8px;border-left:0;border-bottom:0}
+.scan-frame .c3{bottom:8px;left:8px;border-right:0;border-top:0}
+.scan-frame .c4{bottom:8px;right:8px;border-left:0;border-top:0}
+.scan-status{text-align:center;font-size:14px;color:var(--rose);letter-spacing:2px;margin-top:20px;height:22px}
+.scan-result{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card);text-align:center;display:none}
+.scan-result.on{display:block;animation:fade .5s ease}
+.scan-result .big{font-size:17px;color:var(--champagne);font-weight:700}
+.scan-result .sm{font-size:12px;color:var(--sub);line-height:1.7;margin-top:8px}
+
+/* 结果 */
+.res-head{text-align:center;padding-top:6px}
+.portrait-row{display:flex;align-items:center;justify-content:center;gap:18px;margin:18px 0 6px}
+.photo-thumb{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--rc,var(--rose));
+  box-shadow:0 10px 24px -12px rgba(0,0,0,.8)}
+.seal-big{--rc:var(--rose);width:110px;height:110px;border:3px solid var(--rc);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;position:relative;
+  box-shadow:0 0 0 5px rgba(255,255,255,.05),0 14px 34px -14px var(--rc);animation:stamp .5s cubic-bezier(.2,1.5,.4,1)}
+.seal-big::after{content:"";position:absolute;inset:7px;border:1px dashed var(--rc);border-radius:50%;opacity:.7}
+.seal-big .nm{font-family:"KaiTi","STKaiti",serif;font-size:58px;color:var(--champagne)}
+@keyframes stamp{from{transform:scale(1.5) rotate(-18deg);opacity:0}to{transform:scale(1) rotate(-6deg);opacity:1}}
+.r-label{font-size:12px;letter-spacing:5px;color:var(--rose);margin:18px 0 6px}
+.r-name{font-size:clamp(27px,7.6vw,38px);font-weight:800;margin:0;letter-spacing:2px;color:var(--champagne)}
+.r-en{font-size:11px;color:var(--rose);letter-spacing:3px;margin:6px 0 0;text-transform:uppercase}
+.r-id{font-size:13px;color:var(--sub);margin:9px 0 0;letter-spacing:1px}
+.score-card{display:flex;align-items:center;gap:18px;margin:24px 0 18px;padding:18px;border-radius:18px;
+  border:1px solid var(--line);background:linear-gradient(135deg,rgba(232,160,173,.1),rgba(255,255,255,.02))}
+.ring{position:relative;flex:0 0 122px;width:122px;height:122px}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .trk{stroke:rgba(255,255,255,.08)}
+.ring .val{stroke:url(#gg);stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.ring .num b{font-size:33px;color:var(--champagne);line-height:1}
+.ring .num small{font-size:10px;color:var(--sub);margin-top:4px;letter-spacing:.5px}
+.score-txt h3{margin:0 0 10px;font-size:16px;color:var(--rose)}
+.score-txt p{margin:0;font-size:13px;color:var(--sub);line-height:1.75}
+.diag{display:flex;gap:10px;margin:0 0 18px}
+.diag-item{flex:1;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:13px 14px}
+.diag-item .dt{font-size:11px;color:var(--rose);letter-spacing:1px}
+.diag-item .dv{font-size:15px;color:var(--champagne);font-weight:700;margin:6px 0 4px}
+.diag-item .dd{font-size:11px;color:var(--sub);line-height:1.6}
+.sec{margin:22px 0}
+.sec-t{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--rose);margin-bottom:11px;letter-spacing:1px}
+.sec-t em{font-style:normal;font-size:16px}
+.desc{font-size:14px;line-height:2;color:#ece0d8;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+.line-item{display:flex;gap:11px;font-size:13px;line-height:1.85;color:#ece0d8;margin-bottom:9px}
+.line-item:last-child{margin-bottom:0}
+.line-item b{color:var(--rose);flex:0 0 34px;font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tag{font-size:12px;color:var(--champagne);border:1px solid var(--line);background:rgba(232,160,173,.08);padding:6px 12px;border-radius:20px}
+.palette{display:flex;gap:9px;margin-top:4px}
+.palette i{flex:1;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
+.top3{display:flex;flex-direction:column;gap:11px}
+.t3row{display:flex;align-items:center;gap:11px;font-size:13px}
+.t3row .n{width:92px;color:var(--txt);flex:0 0 92px}
+.t3row .track{flex:1;height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden}
+.t3row .track i{display:block;height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--rose2),var(--rose));transition:width 1s .2s}
+.t3row .p{width:38px;text-align:right;color:var(--rose);font-variant-numeric:tabular-nums}
+.btns{display:flex;flex-direction:column;gap:11px;margin-top:26px}
+.toast{position:fixed;left:50%;bottom:40px;transform:translate(-50%,20px);background:rgba(27,18,25,.96);
+  border:1px solid var(--line);color:var(--champagne);padding:12px 22px;border-radius:30px;font-size:13px;
+  opacity:0;pointer-events:none;transition:.3s;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:86vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:480px){
+  .wrap{padding:22px 15px 34px}
+  .seal-hero{width:82px;height:82px}.seal-hero span{font-size:46px}
+  .score-card{gap:12px;padding:14px}.ring{flex-basis:104px;width:104px;height:104px}.ring .num b{font-size:28px}
+  .photo-thumb{width:78px;height:78px}.seal-big{width:94px;height:94px}.seal-big .nm{font-size:48px}
+  .portrait-row{gap:14px}
+  .diag{gap:8px}.diag-item{padding:11px}
+}
+</style>
+</head>
+<body>
+<canvas id="dust"></canvas>
+<div class="wrap">
+
+  <!-- 首页 -->
+  <section class="view home on" id="v-home">
+    <div class="seal-hero"><span>美</span></div>
+    <div class="orn">AI 风 格 诊 断 · 专 属 变 美 方 案</div>
+    <h1 style="margin-top:16px">测一测你最适合<br>什么风格</h1>
+    <p class="subtitle">上传一张正面照片<br>定制你的发型 · 发饰 · 妆容 · 变美攻略<br>找到最适合你的样子</p>
+    <p class="hint">本地识别 · 无需答题 · 约 1 分钟</p>
+    <label class="up-zone" id="upzone" for="fileinput">
+      <input type="file" id="fileinput" accept="image/*" style="display:none">
+      <div class="cam">📷</div>
+      <div class="up-t">点击上传一张正面照片</div>
+      <div class="up-s">拍照或从相册选择 · 照片仅在本机处理，不会上传服务器</div>
+    </label>
+    <div class="manual" id="manual">
+      <div class="manual-t">识别不准？也可以手动选择你的脸型：</div>
+      <div class="shape-row" id="shapeRow">
+        <div class="shape-btn" data-shape="oval">鹅蛋脸</div>
+        <div class="shape-btn" data-shape="round">圆脸</div>
+        <div class="shape-btn" data-shape="square">方脸</div>
+        <div class="shape-btn" data-shape="long">长脸</div>
+        <div class="shape-btn" data-shape="heart">心形脸</div>
+        <div class="shape-btn" data-shape="diamond">菱形脸</div>
+      </div>
+      <div class="manual-t">再选一下你的肤色色调：</div>
+      <div class="shape-row" id="toneRow">
+        <div class="shape-btn" data-tone="cool">冷调白皙</div>
+        <div class="shape-btn" data-tone="warm">暖调肌肤</div>
+        <div class="shape-btn" data-tone="natural">自然肤色</div>
+        <div class="shape-btn" data-tone="tan">健康小麦</div>
+      </div>
+    </div>
+    <button class="btn" id="goBtn" onclick="goScan()" disabled>开始风格诊断 &nbsp;→</button>
+    <div class="link-btn" onclick="enableManual()">不传照片？手动选脸型和肤色直接分析</div>
+    <div class="foot-note">趣味测试 · 综合美学搭配知识，仅供参考<br>美没有标准答案，自信就是你最好的风格</div>
+  </section>
+
+  <!-- 扫描 -->
+  <section class="view" id="v-scan">
+    <div class="orn">正 冠 端 容 · 开 始 诊 断</div>
+    <div class="scan-stage">
+      <div class="scan-frame">
+        <canvas id="scanCanvas"></canvas>
+        <div class="scan-line"></div>
+        <div class="corner c1"></div><div class="corner c2"></div>
+        <div class="corner c3"></div><div class="corner c4"></div>
+      </div>
+      <div class="scan-status" id="scanStatus">正在捕捉面部轮廓…</div>
+      <div class="scan-result" id="scanResult">
+        <div class="big" id="scanBig"></div>
+        <div class="sm" id="scanSm"></div>
+      </div>
+    </div>
+    <button class="btn" id="toResultBtn" onclick="showResult()" disabled style="display:none">查看我的专属变美方案 &nbsp;→</button>
+    <button class="btn ghost" onclick="backHome()">重新上传</button>
+    <div class="foot-note">识别基于本地图像分析，仅供娱乐参考</div>
+  </section>
+
+  <!-- 结果 -->
+  <section class="view" id="v-result">
+    <div class="res-head">
+      <div class="orn">专 属 风 格 · 变 美 指 南</div>
+      <div class="portrait-row">
+        <img class="photo-thumb" id="rphoto" alt="风格照">
+        <div class="seal-big" id="rseal"><div class="nm" id="rsealname"></div></div>
+      </div>
+      <div class="r-label">你最适合</div>
+      <h2 class="r-name" id="rname"></h2>
+      <p class="r-en" id="ren"></p>
+      <p class="r-id" id="rid"></p>
+    </div>
+    <div class="score-card">
+      <div class="ring">
+        <svg width="122" height="122" viewBox="0 0 128 128">
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f6d3bf"/><stop offset="1" stop-color="#c96f80"/>
+          </linearGradient></defs>
+          <circle class="trk" cx="64" cy="64" r="54"/>
+          <circle class="val" id="ringval" cx="64" cy="64" r="54"/>
+        </svg>
+        <div class="num"><b id="rpct">0</b><small>风格契合度 %</small></div>
+      </div>
+      <div class="score-txt">
+        <h3 id="rverdict"></h3>
+        <p id="rwhy"></p>
+      </div>
+    </div>
+    <div class="diag">
+      <div class="diag-item"><div class="dt">脸型诊断</div><div class="dv" id="rface"></div><div class="dd" id="rfaced"></div></div>
+      <div class="diag-item"><div class="dt">肤色诊断</div><div class="dv" id="rtone"></div><div class="dd" id="rtoned"></div></div>
+    </div>
+    <div class="sec"><div class="sec-t"><em>✦</em> 风格解析</div><div class="desc" id="rintro"></div><div class="tags" id="rtags"></div></div>
+    <div class="sec"><div class="sec-t"><em>💇</em> 发型推荐</div><div class="desc" id="rhair"></div></div>
+    <div class="sec"><div class="sec-t"><em>🎀</em> 发饰点睛</div><div class="desc" id="racc"></div></div>
+    <div class="sec"><div class="sec-t"><em>💄</em> 妆容方案</div><div class="desc" id="rmakeup"></div></div>
+    <div class="sec"><div class="sec-t"><em>👗</em> 变美攻略</div><div class="desc" id="rtips"></div></div>
+    <div class="sec"><div class="sec-t"><em>🎨</em> 你的专属色卡</div><div class="palette" id="rpalette"></div></div>
+    <div class="sec"><div class="sec-t"><em>✧</em> 相近风格</div><div class="top3" id="rtop"></div></div>
+    <div class="btns">
+      <button class="btn" onclick="makeCard()">生成变美方案卡</button>
+      <button class="btn ghost" onclick="restart()">再测一次</button>
+    </div>
+    <div class="foot-note">方案卡将保存到当前设备的「下载」文件夹<br>趣味测试 · 综合美学搭配知识，仅供娱乐参考</div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 风格美学库 ============ */
+const STYLE={
+  sweet:{name:'甜美软妹风',en:'Sweet & Soft',char:'甜',col:'#ef9fb0',col2:'#f7d0b8',
+    tags:['元气','减龄','亲和','软糯'],
+    intro:'你自带一股甜软的亲和力，圆润线条与透亮肌肤是你最大的加分项。走甜美路线，重点在轻盈、蓬松与减龄——用柔软的曲线和暖调色彩，把你天真元气的一面放大到极致。',
+    hair:[['轮廓','空气感齐刘海 + 微卷锁骨发，蓬松又显脸小'],['长度','锁骨发或及肩短发，利落中带一点慵懒'],['发色','奶茶棕、蜜茶色，温柔又显白'],['造型','高马尾或双丸子头，露出额头更显乖巧']],
+    acc:['珍珠发夹、蝴蝶结发带，甜度恰到好处','细发箍搭配小碎花发圈，元气又减龄'],
+    makeup:{base:'水光奶油肌，薄透打底加局部提亮',brow:'平缓弯眉，自然棕色，弱化面部棱角',eye:'大地色打底加卧蚕提亮，眼线细软上扬',blush:'粉橘或蜜桃腮红，打在苹果肌位置',lip:'镜面唇釉，豆沙粉或水红色'},
+    tips:{color:'暖调浅色为主：奶油白、蜜桃粉、鹅黄',outfit:'短款上衣配高腰裙，突出腰线显腿长',accent:'珍珠耳饰、细链项链，精致不夸张',avoid:'避开过于浓艳的暗色与利落大背头，会压住甜感'},
+    palette:['#f4c2c2','#f7d9b7','#f6e7c9','#ef9fb0'],
+    face:{oval:2,round:3,square:0,long:0,heart:2,diamond:1},
+    tone:{cool:2,warm:3,natural:2,tan:0},
+    verdict:'甜感是你的天赋',why:'柔和的轮廓里藏着亲和力，甜美与元气是你最出彩的底色。'},
+  fresh:{name:'清新初恋风',en:'Fresh & Pure',char:'清',col:'#8fd0c4',col2:'#d9ebe4',
+    tags:['干净','通透','自然','氧气感'],
+    intro:'你身上有一种不施粉黛的干净感，清透的肌肤与舒展的五官是天然优势。清新路线讲究少即是多——保留你原生的小优点，用轻盈的质地和低饱和配色，营造扑面而来的氧气感。',
+    hair:[['轮廓','八字刘海或中分，露额更显清爽'],['长度','中长发自然微卷，蓬松有空气感'],['发色','黑茶色、亚麻棕，低调又有质感'],['造型','低马尾或半扎发，随性又温柔']],
+    acc:['一字夹、素色发圈，点缀得恰到好处','小雏菊或珍珠发饰，增添灵气'],
+    makeup:{base:'清透水润底妆，薄涂提亮，保留肌肤质感',brow:'野生自然眉，顺着眉骨轻描',eye:'淡粉或浅棕眼影，刷出纤长睫毛',blush:'浅粉腮红，轻扫苹果肌营造自然血色',lip:'润唇膏或淡豆沙色，水润不厚重'},
+    tips:{color:'清爽浅色：纯白、浅蓝、薄荷绿',outfit:'棉麻质地、浅色系叠穿，干净利落',accent:'细银饰、珍珠耳钉，低调的精致感',avoid:'避开烟熏妆与高饱和撞色，会破坏干净气质'},
+    palette:['#d9ebe4','#e6f0ea','#cfe0ea','#f2e3d5'],
+    face:{oval:3,round:2,square:0,long:2,heart:2,diamond:1},
+    tone:{cool:3,warm:1,natural:2,tan:1},
+    verdict:'干净是你的名片',why:'舒展的五官里透着清爽，自然与通透是你最舒服的状态。'},
+  cool:{name:'气质御姐风',en:'Chic & Bold',char:'御',col:'#b96b7a',col2:'#e6b8bd',
+    tags:['高级','利落','气场','冷艳'],
+    intro:'你的轮廓里自带一份利落与疏离，是很适合走高级路线的脸。御姐风的核心是把线条感做到极致——服帖的发型、干净的妆面、克制的配色，让你的气场自然流露。',
+    hair:[['轮廓','八字刘海修饰颧骨，露出眉眼更有气场'],['长度','高层次锁骨发或大波浪，蓬松有光泽'],['发色','黑茶色、冷棕色，质感高级'],['造型','服帖顺直或大卷，避免毛躁']],
+    acc:['金属发夹、缎面发带，冷调更显高级','简约鲨鱼夹，随手一抓就有氛围'],
+    makeup:{base:'雾面高级底妆，重修容勾勒轮廓',brow:'利落剑眉，眉峰清晰有力量感',eye:'大地色或酒红眼影，眼线微微上扬',blush:'修容式腮红，斜扫提升面部立体度',lip:'哑光红棕或豆沙色，气场全开'},
+    tips:{color:'高级中性色：黑白灰，点缀酒红',outfit:'剪裁利落的西装、衬衫，质感优先',accent:'金属耳饰、简约腕表，精致有态度',avoid:'避开甜美蝴蝶结与大面积粉色，会削弱气场'},
+    palette:['#2f2a33','#6b5560','#a86a76','#e8c9b8'],
+    face:{oval:2,round:0,square:3,long:3,heart:2,diamond:3},
+    tone:{cool:3,warm:1,natural:2,tan:1},
+    verdict:'气场是你的主场',why:'清晰的轮廓里藏着力量，利落与高级是你最有辨识度的表达。'},
+  retro:{name:'复古港风',en:'Vintage Glam',char:'颜',col:'#d1795f',col2:'#eec9a3',
+    tags:['明艳','浓颜','怀旧','风情'],
+    intro:'你的五官里带着一份浓艳与辨识度，特别适合复古路线。港风讲究蓬松的发量、明火般的红唇和自带故事感的眼神——把你的明艳大方地释放出来，就是最动人的风情。',
+    hair:[['轮廓','蓬松大波浪，打造高颅顶与复古弧度'],['长度','及肩或中长卷发，卷度自然松散'],['发色','深棕或红棕色，浓郁有质感'],['造型','手推波纹或复古半扎，风情万种']],
+    acc:['珍珠发箍、丝巾包头，港味十足','金色发夹，点缀在鬓角更出彩'],
+    makeup:{base:'哑光瓷肌，遮瑕到位但保留质感',brow:'自然弯月眉，柔和又有型',eye:'红棕眼影晕染，眼线拉长向上',blush:'砖红或杏色腮红，提升气色',lip:'正红或枫叶红唇，妆容重点'},
+    tips:{color:'浓郁复古色：正红、墨绿、焦糖、牛仔蓝',outfit:'丝质衬衫、高腰裤，复古又时髦',accent:'金色大耳环、红唇，明艳动人',avoid:'避开寡淡裸色与空气刘海，会淹没你的明艳'},
+    palette:['#b5453f','#d98a6a','#2f4f4a','#e8c9a0'],
+    face:{oval:2,round:1,square:2,long:1,heart:3,diamond:2},
+    tone:{cool:1,warm:3,natural:2,tan:1},
+    verdict:'明艳是你的武器',why:'立体的五官里藏着风情，浓艳与复古是你最惊艳的打开方式。'},
+  literary:{name:'文艺森系',en:'Soft & Natural',char:'文',col:'#9fb89a',col2:'#d9dfc8',
+    tags:['松弛','书卷','清淡','治愈'],
+    intro:'你身上有一股安静松弛的书卷气，不争不抢却很耐看。文艺路线重在自然与质感——用低饱和的大地色、随性的发型和轻盈的妆面，把你淡然舒服的气质烘托出来。',
+    hair:[['轮廓','中分八字刘海，自然贴合脸型'],['长度','黑长直或微卷中长发，清汤挂面感'],['发色','自然黑、亚麻茶色，低调耐看'],['造型','低丸子头或半扎发，慵懒有味道']],
+    acc:['木质发簪、细发带，自然系点缀','贝雷帽或素色发箍，文艺感拉满'],
+    makeup:{base:'轻薄底妆，保留肌肤自然纹理',brow:'自然眉，根根分明即可',eye:'大地色或茶色眼影，妆感极淡',blush:'裸粉腮红，若有似无',lip:'豆沙或奶茶色唇，温润日常'},
+    tips:{color:'低饱和大地色：米白、燕麦、雾霾绿、浅咖',outfit:'棉麻、针织单品，宽松有层次',accent:'木质或珍珠细饰，书卷气更浓',avoid:'避开高饱和亮色与夸张金属感，会破坏松弛氛围'},
+    palette:['#c9c3b4','#a8b8a0','#e4d9c6','#8f9c86'],
+    face:{oval:2,round:1,square:1,long:3,heart:1,diamond:2},
+    tone:{cool:2,warm:1,natural:3,tan:1},
+    verdict:'松弛是你的气质',why:'清淡的轮廓里藏着从容，自然与书卷气是你最耐看的底色。'},
+  sporty:{name:'元气活力风',en:'Bright & Active',char:'元',col:'#f0a35e',col2:'#f7d08a',
+    tags:['阳光','健康','动感','明亮'],
+    intro:'你自带阳光健康的生命力，清爽利落是你最好的状态。元气路线讲究干净、有活力——用高马尾、明亮配色和轻薄妆容，把你的朝气与自信大方展现出来。',
+    hair:[['轮廓','清爽露额，高马尾或丸子头最提气'],['长度','利落短发或中长发，层次分明'],['发色','自然黑或浅棕，健康有光泽'],['造型','高扎发、双马尾，活泼又减龄']],
+    acc:['运动发带、彩色发圈，活力感十足','棒球帽或鲨鱼夹，清爽又时髦'],
+    makeup:{base:'清透控油底妆，哑光更显精神',brow:'自然微挑眉，干净利落',eye:'明亮眼影加卷翘睫毛，眼神有光',blush:'橘色腮红，横扫苹果肌',lip:'橘红或水润唇色，元气满满'},
+    tips:{color:'明亮活泼色：姜黄、珊瑚橘、天空蓝',outfit:'运动休闲风，舒适又有型',accent:'简约耳钉、运动手表，清爽利落',avoid:'避开厚重暗沉的妆容与繁复发饰，会压住活力'},
+    palette:['#f0a35e','#f2c14e','#8ec5d6','#f4e3c8'],
+    face:{oval:1,round:3,square:2,long:0,heart:1,diamond:0},
+    tone:{cool:0,warm:2,natural:1,tan:3},
+    verdict:'元气是你的能量',why:'清爽的轮廓里藏着阳光，活力与自信是你最感染人的地方。'}
+};
+const KEYS=Object.keys(STYLE);
+const FACE={
+  oval:{name:'鹅蛋脸',desc:'线条流畅、比例均衡，几乎百搭各种发型'},
+  round:{name:'圆脸',desc:'面颊圆润、下颌柔和，显年轻有亲和力'},
+  square:{name:'方脸',desc:'下颌角清晰、轮廓分明，自带气场'},
+  long:{name:'长脸',desc:'纵向比例偏长，清瘦显气质'},
+  heart:{name:'心形脸',desc:'额头较宽、下巴尖巧，上宽下窄'},
+  diamond:{name:'菱形脸',desc:'颧骨略宽、上下收窄，立体感强'}
+};
+const TONE={
+  cool:{name:'冷调白皙',desc:'肤色偏冷白，适合冷色系与低饱和色'},
+  warm:{name:'暖调肌肤',desc:'肤色偏暖，适合暖色系与明亮色'},
+  natural:{name:'自然肤色',desc:'肤色均匀自然，冷暖色系都能驾驭'},
+  tan:{name:'健康小麦',desc:'肤色健康有光泽，适合高饱和与明亮色'}
+};
+
+/* ============ 逻辑 ============ */
+const $=id=>document.getElementById(id);
+let resultKey=null,faceResult=null,photoDataURL=null,manualShape=null,manualTone=null;
+
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));$(id).classList.add('on');window.scrollTo(0,0)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400)}
+
+/* 星尘柔光背景 */
+(function(){
+  const c=$('dust'),x=c.getContext('2d');let W,H,pts=[];
+  function rs(){W=c.width=innerWidth;H=c.height=innerHeight;pts=Array.from({length:Math.min(74,Math.floor(W*H/18000))},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.3,a:Math.random(),v:Math.random()*.012+.004}))}
+  rs();addEventListener('resize',rs);
+  function loop(){x.clearRect(0,0,W,H);for(const p of pts){p.a+=p.v;if(p.a>1||p.a<.1)p.v*=-1;
+    x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fillStyle='rgba(240,200,190,'+(p.a*.4)+')';x.fill()}
+    requestAnimationFrame(loop)}loop();
+})();
+
+/* ---------- 照片上传 ---------- */
+$('fileinput').addEventListener('change',function(e){
+  const f=e.target.files[0];if(!f)return;
+  if(!f.type.startsWith('image/')){toast('请选择图片文件');return}
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      photoDataURL=ev.target.result;
+      const zone=$('upzone');zone.classList.add('has');
+      zone.querySelector('.cam')?.remove();zone.querySelector('.up-t')?.remove();zone.querySelector('.up-s')?.remove();
+      let pv=zone.querySelector('img');
+      if(!pv){pv=document.createElement('img');zone.insertBefore(pv,zone.firstChild)}
+      pv.src=photoDataURL;
+      if(!zone.querySelector('.reup')){const r=document.createElement('div');r.className='reup';r.textContent='重新上传';zone.appendChild(r)}
+      faceResult=analyzeFace(img);
+      manualShape=null;manualTone=null;
+      document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('on'));
+      $('manual').classList.add('on');
+      $('goBtn').disabled=false;
+      toast(faceResult?'照片已载入，识别完成 ✓':'照片已载入 ✓');
+    };
+    img.src=ev.target.result;
+  };
+  rd.readAsDataURL(f);
+});
+$('shapeRow').addEventListener('click',e=>{
+  const b=e.target.closest('.shape-btn');if(!b)return;
+  document.querySelectorAll('#shapeRow .shape-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');manualShape=b.dataset.shape;$('goBtn').disabled=false;
+});
+$('toneRow').addEventListener('click',e=>{
+  const b=e.target.closest('.shape-btn');if(!b)return;
+  document.querySelectorAll('#toneRow .shape-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');manualTone=b.dataset.tone;$('goBtn').disabled=false;
+});
+function enableManual(){
+  $('manual').classList.add('on');
+  if(!manualShape&&!photoDataURL)toast('请选择脸型和肤色');
+}
+
+/* ---------- 本地图像分析：肤色定位 + 脸型 + 肤色色调 ---------- */
+function analyzeFace(img){
+  const c=document.createElement('canvas'),SW=220,SH=Math.max(1,Math.round(img.height/img.width*SW));
+  c.width=SW;c.height=SH;const x=c.getContext('2d');x.drawImage(img,0,0,SW,SH);
+  let d;try{d=x.getImageData(0,0,SW,SH).data}catch(e){return null}
+  const isSkin=(r,g,b)=>{
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+    const rgb=(r>95&&g>40&&b>20&&mx-mn>15&&Math.abs(r-g)>15&&r>g&&r>b);
+    const cr=128+0.5*r-0.419*g-0.081*b,cb=128-0.169*r-0.331*g+0.5*b;
+    const ycc=(cr>133&&cr<180&&cb>77&&cb<130);
+    return rgb||ycc;
+  };
+  let minX=SW,minY=SH,maxX=0,maxY=0,cnt=0,sr=0,sg=0,sb=0;
+  const y0=Math.floor(SH*.08),y1=Math.floor(SH*.9),x0=Math.floor(SW*.18),x1=Math.floor(SW*.82);
+  for(let y=y0;y<y1;y++)for(let px=x0;px<x1;px++){
+    const i=(y*SW+px)*4;
+    if(isSkin(d[i],d[i+1],d[i+2])){
+      cnt++;sr+=d[i];sg+=d[i+1];sb+=d[i+2];
+      if(px<minX)minX=px;if(px>maxX)maxX=px;if(y<minY)minY=y;if(y>maxY)maxY=y;
+    }
+  }
+  const area=cnt/(SW*SH),w=maxX-minX,h=maxY-minY;
+  if(area<0.015||w<24||h<24)return null;
+  const rowW=fy=>{let n=0,yy=Math.round(fy);for(let px=minX;px<=maxX;px++){const i=(yy*SW+px)*4;if(isSkin(d[i],d[i+1],d[i+2]))n++}return n};
+  const upper=rowW(minY+h*.20),middle=rowW(minY+h*.50),lower=rowW(minY+h*.80);
+  const ratio=w/h,jaw=upper/Math.max(1,lower),cheek=middle/Math.max(1,(upper+lower)/2);
+
+  // 肤色色调：冷暖 + 明暗
+  const tone=cnt?{r:Math.round(sr/cnt),g:Math.round(sg/cnt),b:Math.round(sb/cnt)}:null;
+  let toneKey='natural';
+  if(tone){
+    const lum=(tone.r+tone.g+tone.b)/3,diff=tone.b-tone.r;
+    if(lum<158)toneKey='tan';
+    else if(diff>6)toneKey='cool';
+    else if(diff<-9)toneKey='warm';
+    else toneKey='natural';
+  }
+
+  // 脸型判定
+  let shapeKey;
+  if(ratio<0.70)shapeKey='long';
+  else if(cheek>1.10)shapeKey='diamond';
+  else if(jaw>1.14)shapeKey='heart';
+  else if(ratio>1.02||jaw>0.98&&ratio>0.95)shapeKey='round';
+  else if(jaw<0.9)shapeKey='square';
+  else shapeKey='oval';
+  return {shapeKey,toneKey,ratio,jaw,cheek,tone,ok:true};
+}
+
+/* ---------- 风格匹配 ---------- */
+function rankStyles(shapeKey,toneKey){
+  return KEYS.map(k=>{
+    const s=STYLE[k];
+    return {k,score:s.face[shapeKey]+s.tone[toneKey]};
+  }).sort((a,b)=>b.score-a.score);
+}
+
+/* ---------- 扫描动画 ---------- */
+function goScan(){
+  if(!photoDataURL&&(!manualShape||!manualTone)){toast('请上传照片，或手动选脸型和肤色');return}
+  show('v-scan');
+  const img=new Image();
+  img.onload=()=>{
+    const cv=$('scanCanvas'),W=cv.width=720,H=cv.height=Math.round(img.height/img.width*720);
+    const x=cv.getContext('2d');
+    x.filter='saturate(.75) sepia(.12) contrast(1.05) brightness(.98)';
+    x.drawImage(img,0,0,W,H);x.filter='none';
+    const fx=W*.30,fy=H*.16,fw=W*.40,fh=H*.68;
+    x.strokeStyle='rgba(240,217,184,.65)';x.lineWidth=2;x.setLineDash([10,8]);
+    x.strokeRect(fx,fy,fw,fh);x.setLineDash([]);
+    for(let i=1;i<3;i++){const yy=fy+fh*i/3;x.beginPath();x.moveTo(fx,yy);x.lineTo(fx+fw,yy);x.stroke()}
+    x.beginPath();x.moveTo(fx+fw/2,fy);x.lineTo(fx+fw/2,fy+fh);x.stroke();
+    x.fillStyle='rgba(240,217,184,.85)';
+    [[fx+fw*.28,fy+fh*.30],[fx+fw*.72,fy+fh*.30],[fx+fw*.5,fy+fh*.52],[fx+fw*.5,fy+fh*.74]].forEach(p=>{x.beginPath();x.arc(p[0],p[1],5,0,7);x.fill()});
+  };
+  img.onerror=()=>{
+    const cv=$('scanCanvas'),W=cv.width=720,H=cv.height=900,x=cv.getContext('2d');
+    const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#3a2430');g.addColorStop(1,'#0c080c');x.fillStyle=g;x.fillRect(0,0,W,H);
+    x.strokeStyle='rgba(232,160,173,.4)';x.lineWidth=2;
+    for(let r=120;r<520;r+=70){x.beginPath();x.arc(W/2,H/2,r,0,7);x.stroke()}
+    x.fillStyle='#e8a0ad';x.font='bold 220px "KaiTi","STKaiti",serif';x.textAlign='center';x.fillText('美',W/2,H/2+78);
+  };
+  img.src=photoDataURL;
+  const msgs=['正在捕捉面部轮廓…','正在分析脸型比例…','正在判断肤色色调…','正在匹配专属美学方案…'];
+  let i=0;$('scanStatus').textContent=msgs[0];
+  clearInterval(window.__scanTimer);
+  window.__scanTimer=setInterval(()=>{i=(i+1)%msgs.length;$('scanStatus').textContent=msgs[i]},700);
+  setTimeout(()=>{
+    clearInterval(window.__scanTimer);$('scanStatus').textContent='诊断完成 ✓';
+    const eff=effective();
+    $('scanBig').textContent='检测到：'+FACE[eff.shape].name+' · '+TONE[eff.tone].name;
+    $('scanSm').textContent=faceResult&&!manualShape
+      ? '面部宽高比 '+faceResult.ratio.toFixed(2)+' · 轮廓指数 '+faceResult.jaw.toFixed(2)
+      : '已采用你手动选择的脸型与肤色';
+    $('scanResult').classList.add('on');
+    const b=$('toResultBtn');b.style.display='inline-flex';b.disabled=false;
+  },2700);
+}
+function effective(){
+  const shape=manualShape||(faceResult?faceResult.shapeKey:null);
+  const tone=manualTone||(faceResult?faceResult.toneKey:null);
+  return {shape,tone};
+}
+function backHome(){clearInterval(window.__scanTimer);show('v-home')}
+
+/* ---------- 生成变美方案 ---------- */
+function showResult(){
+  const eff=effective();
+  if(!eff.shape||!eff.tone){toast('未能识别，请手动选择脸型和肤色');return}
+  const ranked=rankStyles(eff.shape,eff.tone);
+  const topScore=ranked[0].score;
+  resultKey=ranked[0].k;
+  const per=STYLE[resultKey];
+  const pct=Math.round(58+topScore/6*42);
+
+  $('rseal').style.setProperty('--rc',per.col);
+  $('rsealname').textContent=per.char;
+  $('rname').textContent=per.name;
+  $('ren').textContent=per.en;
+  $('rid').textContent='为你量身定制的变美方向';
+  $('rverdict').textContent=per.verdict;
+  $('rwhy').textContent=per.why;
+
+  $('rface').textContent=FACE[eff.shape].name;
+  $('rfaced').textContent=FACE[eff.shape].desc;
+  $('rtone').textContent=TONE[eff.tone].name;
+  $('rtoned').textContent=TONE[eff.tone].desc;
+
+  $('rintro').textContent=per.intro;
+  $('rtags').innerHTML=per.tags.map(t=>'<span class="tag"># '+t+'</span>').join('');
+  $('rhair').innerHTML=per.hair.map(h=>'<div class="line-item"><b>'+h[0]+'</b><span>'+h[1]+'</span></div>').join('');
+  $('racc').innerHTML=per.acc.map((a,i)=>'<div class="line-item"><b>'+(i===0?'发饰':'点缀')+'</b><span>'+a+'</span></div>').join('');
+  const mk=per.makeup;
+  $('rmakeup').innerHTML=
+    '<div class="line-item"><b>底妆</b><span>'+mk.base+'</span></div>'+
+    '<div class="line-item"><b>眉形</b><span>'+mk.brow+'</span></div>'+
+    '<div class="line-item"><b>眼妆</b><span>'+mk.eye+'</span></div>'+
+    '<div class="line-item"><b>腮红</b><span>'+mk.blush+'</span></div>'+
+    '<div class="line-item"><b>唇色</b><span>'+mk.lip+'</span></div>';
+  const tp=per.tips;
+  $('rtips').innerHTML=
+    '<div class="line-item"><b>色系</b><span>'+tp.color+'</span></div>'+
+    '<div class="line-item"><b>穿搭</b><span>'+tp.outfit+'</span></div>'+
+    '<div class="line-item"><b>配饰</b><span>'+tp.accent+'</span></div>'+
+    '<div class="line-item"><b>避雷</b><span>'+tp.avoid+'</span></div>';
+  $('rpalette').innerHTML=per.palette.map(c=>'<i style="background:'+c+'"></i>').join('');
+
+  if(photoDataURL){$('rphoto').src=photoDataURL;$('rphoto').style.display='block'}
+  else $('rphoto').style.display='none';
+
+  show('v-result');
+  $('ringval').style.strokeDashoffset=(339.3*(1-pct/100)).toFixed(1);
+  let n=0;const timer=setInterval(()=>{n+=Math.ceil(pct/22);if(n>=pct){n=pct;clearInterval(timer)}$('rpct').textContent=n},45);
+
+  $('rtop').innerHTML=ranked.slice(0,3).map((r,i)=>{
+    const v=i===0?pct:Math.max(35,Math.round(pct*(i===1?.86:.72)));
+    return '<div class="t3row"><span class="n">'+(i+1)+'. '+STYLE[r.k].name+'</span>'+
+      '<span class="track"><i data-w="'+v+'"></i></span>'+
+      '<span class="p">'+v+'%</span></div>';
+  }).join('');
+  setTimeout(()=>document.querySelectorAll('#rtop .track i').forEach(e=>e.style.width=e.dataset.w+'%'),120);
+}
+function restart(){show('v-home')}
+
+/* ---------- 生成变美方案卡 ---------- */
+function makeCard(){
+  if(!resultKey)return;
+  const p=STYLE[resultKey],W=1080,H=1440,c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#3a2430');g.addColorStop(1,'#0c080c');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(232,160,173,.08)';x.lineWidth=2;
+  for(let r=140;r<760;r+=62){x.beginPath();x.arc(W/2,H/2,r,0,7);x.stroke()}
+  x.textAlign='center';
+  x.fillStyle='#e8a0ad';x.font='600 30px sans-serif';x.fillText('专 属 风 格 · 变 美 方 案',W/2,90);
+  if(photoDataURL){
+    const img=new Image();
+    img.onload=()=>{drawCardBody(x,p,W,H,img);saveCard(p,c)};
+    img.src=photoDataURL;
+  }else{drawCardBody(x,p,W,H,null);saveCard(p,c)}
+}
+function saveCard(p,c){
+  const a=document.createElement('a');
+  a.download='变美方案_'+p.name+'.png';a.href=c.toDataURL('image/png');a.click();
+  toast('变美方案卡已保存 ✓');
+}
+function drawCardBody(x,p,W,H,img){
+  const cx=W/2,cy=300,rad=150;
+  if(img){
+    x.save();x.beginPath();x.arc(cx,cy,rad,0,7);x.clip();
+    const s=Math.max(img.width,img.height),sx=(img.width-s)/2,sy=(img.height-s)/2;
+    x.drawImage(img,sx,sy,s,s,cx-rad,cy-rad,rad*2,rad*2);x.restore();
+    x.strokeStyle=p.col;x.lineWidth=6;x.beginPath();x.arc(cx,cy,rad,0,7);x.stroke();
+  }else{
+    x.strokeStyle=p.col;x.lineWidth=6;x.beginPath();x.arc(cx,cy,rad,0,7);x.stroke();
+    x.fillStyle=p.col;x.font='bold 150px "KaiTi","STKaiti",serif';x.fillText(p.char,cx,cy+52);
+  }
+  x.save();x.translate(W/2+112,cy+112);x.rotate(-6*Math.PI/180);
+  x.fillStyle='rgba(12,8,12,.85)';x.strokeStyle=p.col;x.lineWidth=4;
+  x.fillRect(-46,-46,92,92);x.strokeRect(-46,-46,92,92);
+  x.fillStyle='#f0d9b8';x.font='bold 58px "KaiTi","STKaiti",serif';x.fillText(p.char,0,20);x.restore();
+  x.fillStyle='#f8f0ec';x.font='800 66px sans-serif';x.fillText(p.name,cx,540);
+  x.fillStyle='#e8a0ad';x.font='26px sans-serif';x.fillText(p.en.toUpperCase(),cx,584);
+  x.fillStyle='#f0d9b8';x.font='700 40px sans-serif';x.fillText('风格契合度 '+document.getElementById('rpct').textContent+'%',cx,668);
+  x.fillStyle='#ece0d8';x.font='28px sans-serif';
+  wrapText(x,p.intro.slice(0,54)+'…',cx,752,W-160,46);
+  const lines=['发型  '+p.hair[0][1],'妆容  '+p.makeup.lip,'攻略  '+p.tips.color];
+  x.fillStyle='#e8a0ad';x.font='600 27px sans-serif';
+  lines.forEach((t,i)=>wrapText(x,t,cx,1010+i*66,W-180,40));
+  const n=p.palette.length,bw=120,gap=18,total=n*bw+(n-1)*gap,sx0=cx-total/2;
+  p.palette.forEach((col,i)=>{x.fillStyle=col;x.beginPath();x.roundRect(sx0+i*(bw+gap),1280,bw,54,12);x.fill()});
+  x.fillStyle='#a08a84';x.font='24px sans-serif';x.fillText('测一测你最适合什么风格',cx,H-52);
+}
+function wrapText(ctx,text,cx,y,maxW,lh){
+  const chars=text.split('');let line='',yy=y;
+  for(const ch of chars){if(ctx.measureText(line+ch).width>maxW){ctx.fillText(line,cx,yy);line=ch;yy+=lh}else line+=ch}
+  if(line)ctx.fillText(line,cx,yy)
+}
+</script>
+</body>
+</html>
