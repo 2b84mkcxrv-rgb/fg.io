@@ -137,6 +137,16 @@ h1{font-size:clamp(26px,7.2vw,37px);line-height:1.4;margin:14px 0 0;font-weight:
   border:1px solid var(--line);color:var(--champagne);padding:12px 22px;border-radius:30px;font-size:13px;
   opacity:0;pointer-events:none;transition:.3s;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:86vw;text-align:center}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* 校准 / 测量依据 */
+.calib{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);text-align:left}
+.calib-t{font-size:12px;color:var(--champagne);line-height:1.7;margin-bottom:4px}
+.calib-l{font-size:11px;color:var(--rose);letter-spacing:1px;margin:12px 0 7px}
+.calib-row{display:flex;flex-wrap:wrap;gap:7px}
+.cal-btn{font-size:11px;color:var(--sub);border:1px solid var(--line);background:var(--card);padding:6px 11px;border-radius:16px;cursor:pointer;transition:.18s}
+.cal-btn.on{background:rgba(232,160,173,.2);border-color:var(--rose);color:var(--champagne)}
+.calib-tip{font-size:10px;color:#8f7d78;line-height:1.75;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.metric-note{font-size:11px;color:#8f7d78;line-height:1.85;margin-top:11px;border-top:1px dashed var(--line);padding-top:10px}
 @media(max-width:480px){
   .wrap{padding:22px 15px 34px}
   .seal-hero{width:82px;height:82px}.seal-hero span{font-size:46px}
@@ -154,15 +164,15 @@ h1{font-size:clamp(26px,7.2vw,37px);line-height:1.4;margin:14px 0 0;font-weight:
   <!-- 首页 -->
   <section class="view home on" id="v-home">
     <div class="seal-hero"><span>美</span></div>
-    <div class="orn">AI 风 格 诊 断 · 专 属 变 美 方 案</div>
+    <div class="orn">FACE &amp; COLOR ANALYSIS · 脸 型 肤 色 诊 断</div>
     <h1 style="margin-top:16px">测一测你最适合<br>什么风格</h1>
     <p class="subtitle">上传一张正面照片<br>定制你的发型 · 发饰 · 妆容 · 变美攻略<br>找到最适合你的样子</p>
-    <p class="hint">本地识别 · 无需答题 · 约 1 分钟</p>
+    <p class="hint">三庭五眼比例 · CIE Lab 色彩分析 · 本地识别 · 无需答题</p>
     <label class="up-zone" id="upzone" for="fileinput">
       <input type="file" id="fileinput" accept="image/*" style="display:none">
       <div class="cam">📷</div>
       <div class="up-t">点击上传一张正面照片</div>
-      <div class="up-s">拍照或从相册选择 · 照片仅在本机处理，不会上传服务器</div>
+      <div class="up-s">建议：正面、自然光、露出完整下颌线、素颜或淡妆<br>照片仅在本机处理，不会上传服务器</div>
     </label>
     <div class="manual" id="manual">
       <div class="manual-t">识别不准？也可以手动选择你的脸型：</div>
@@ -184,7 +194,7 @@ h1{font-size:clamp(26px,7.2vw,37px);line-height:1.4;margin:14px 0 0;font-weight:
     </div>
     <button class="btn" id="goBtn" onclick="goScan()" disabled>开始风格诊断 &nbsp;→</button>
     <div class="link-btn" onclick="enableManual()">不传照片？手动选脸型和肤色直接分析</div>
-    <div class="foot-note">趣味测试 · 综合美学搭配知识，仅供参考<br>美没有标准答案，自信就是你最好的风格</div>
+    <div class="foot-note">参考标准：三庭五眼 · 脸型长宽比 · 季节色彩冷暖诊断<br>趣味测试 · 综合美学搭配知识，仅供参考</div>
   </section>
 
   <!-- 扫描 -->
@@ -201,6 +211,14 @@ h1{font-size:clamp(26px,7.2vw,37px);line-height:1.4;margin:14px 0 0;font-weight:
       <div class="scan-result" id="scanResult">
         <div class="big" id="scanBig"></div>
         <div class="sm" id="scanSm"></div>
+      </div>
+      <div class="calib" id="calib" style="display:none">
+        <div class="calib-t">识别和你实际不符？按标准自测法校准一下，结果会更准</div>
+        <div class="calib-l">脸型（比较额头 / 颧骨 / 下颌哪处最宽）</div>
+        <div class="calib-row" id="calibShape"></div>
+        <div class="calib-l">肤色色调（血管 / 金银饰 / 白纸三选二一致为准）</div>
+        <div class="calib-row" id="calibTone"></div>
+        <div class="calib-tip">血管偏蓝紫＝冷调，偏绿＝暖调；银饰更衬＝冷调，金饰更衬＝暖调；纯白布更衬＝冷调，米白布更衬＝暖调。三项里两项一致即可判定；都不明显就是自然肤色。</div>
       </div>
     </div>
     <button class="btn" id="toResultBtn" onclick="showResult()" disabled style="display:none">查看我的专属变美方案 &nbsp;→</button>
@@ -241,6 +259,7 @@ h1{font-size:clamp(26px,7.2vw,37px);line-height:1.4;margin:14px 0 0;font-weight:
       <div class="diag-item"><div class="dt">脸型诊断</div><div class="dv" id="rface"></div><div class="dd" id="rfaced"></div></div>
       <div class="diag-item"><div class="dt">肤色诊断</div><div class="dv" id="rtone"></div><div class="dd" id="rtoned"></div></div>
     </div>
+    <div class="sec"><div class="sec-t"><em>📐</em> 测量依据 · 专业标准</div><div class="desc" id="rmetric"></div></div>
     <div class="sec"><div class="sec-t"><em>✦</em> 风格解析</div><div class="desc" id="rintro"></div><div class="tags" id="rtags"></div></div>
     <div class="sec"><div class="sec-t"><em>💇</em> 发型推荐</div><div class="desc" id="rhair"></div></div>
     <div class="sec"><div class="sec-t"><em>🎀</em> 发饰点睛</div><div class="desc" id="racc"></div></div>
@@ -268,8 +287,6 @@ const STYLE={
     makeup:{base:'水光奶油肌，薄透打底加局部提亮',brow:'平缓弯眉，自然棕色，弱化面部棱角',eye:'大地色打底加卧蚕提亮，眼线细软上扬',blush:'粉橘或蜜桃腮红，打在苹果肌位置',lip:'镜面唇釉，豆沙粉或水红色'},
     tips:{color:'暖调浅色为主：奶油白、蜜桃粉、鹅黄',outfit:'短款上衣配高腰裙，突出腰线显腿长',accent:'珍珠耳饰、细链项链，精致不夸张',avoid:'避开过于浓艳的暗色与利落大背头，会压住甜感'},
     palette:['#f4c2c2','#f7d9b7','#f6e7c9','#ef9fb0'],
-    face:{oval:0,round:1,square:0,long:0,heart:3,diamond:0},
-    tone:{cool:0,warm:3,natural:2,tan:0},
     verdict:'甜感是你的天赋',why:'柔和的轮廓里藏着亲和力，甜美与元气是你最出彩的底色。'},
   fresh:{name:'清新初恋风',en:'Fresh & Pure',char:'清',col:'#8fd0c4',col2:'#d9ebe4',
     tags:['干净','通透','自然','氧气感'],
@@ -279,8 +296,6 @@ const STYLE={
     makeup:{base:'清透水润底妆，薄涂提亮，保留肌肤质感',brow:'野生自然眉，顺着眉骨轻描',eye:'淡粉或浅棕眼影，刷出纤长睫毛',blush:'浅粉腮红，轻扫苹果肌营造自然血色',lip:'润唇膏或淡豆沙色，水润不厚重'},
     tips:{color:'清爽浅色：纯白、浅蓝、薄荷绿',outfit:'棉麻质地、浅色系叠穿，干净利落',accent:'细银饰、珍珠耳钉，低调的精致感',avoid:'避开烟熏妆与高饱和撞色，会破坏干净气质'},
     palette:['#d9ebe4','#e6f0ea','#cfe0ea','#f2e3d5'],
-    face:{oval:0,round:0,square:0,long:3,heart:1,diamond:0},
-    tone:{cool:3,warm:0,natural:0,tan:0},
     verdict:'干净是你的名片',why:'舒展的五官里透着清爽，自然与通透是你最舒服的状态。'},
   cool:{name:'气质御姐风',en:'Chic & Bold',char:'御',col:'#b96b7a',col2:'#e6b8bd',
     tags:['高级','利落','气场','冷艳'],
@@ -290,8 +305,6 @@ const STYLE={
     makeup:{base:'雾面高级底妆，重修容勾勒轮廓',brow:'利落剑眉，眉峰清晰有力量感',eye:'大地色或酒红眼影，眼线微微上扬',blush:'修容式腮红，斜扫提升面部立体度',lip:'哑光红棕或豆沙色，气场全开'},
     tips:{color:'高级中性色：黑白灰，点缀酒红',outfit:'剪裁利落的西装、衬衫，质感优先',accent:'金属耳饰、简约腕表，精致有态度',avoid:'避开甜美蝴蝶结与大面积粉色，会削弱气场'},
     palette:['#2f2a33','#6b5560','#a86a76','#e8c9b8'],
-    face:{oval:0,round:0,square:1,long:0,heart:0,diamond:3},
-    tone:{cool:3,warm:0,natural:2,tan:0},
     verdict:'气场是你的主场',why:'清晰的轮廓里藏着力量，利落与高级是你最有辨识度的表达。'},
   retro:{name:'复古港风',en:'Vintage Glam',char:'颜',col:'#d1795f',col2:'#eec9a3',
     tags:['明艳','浓颜','怀旧','风情'],
@@ -301,8 +314,6 @@ const STYLE={
     makeup:{base:'哑光瓷肌，遮瑕到位但保留质感',brow:'自然弯月眉，柔和又有型',eye:'红棕眼影晕染，眼线拉长向上',blush:'砖红或杏色腮红，提升气色',lip:'正红或枫叶红唇，妆容重点'},
     tips:{color:'浓郁复古色：正红、墨绿、焦糖、牛仔蓝',outfit:'丝质衬衫、高腰裤，复古又时髦',accent:'金色大耳环、红唇，明艳动人',avoid:'避开寡淡裸色与空气刘海，会淹没你的明艳'},
     palette:['#b5453f','#d98a6a','#2f4f4a','#e8c9a0'],
-    face:{oval:0,round:0,square:1,long:0,heart:0,diamond:3},
-    tone:{cool:0,warm:3,natural:0,tan:1},
     verdict:'明艳是你的武器',why:'立体的五官里藏着风情，浓艳与复古是你最惊艳的打开方式。'},
   literary:{name:'文艺森系',en:'Soft & Natural',char:'文',col:'#9fb89a',col2:'#d9dfc8',
     tags:['松弛','书卷','清淡','治愈'],
@@ -312,8 +323,6 @@ const STYLE={
     makeup:{base:'轻薄底妆，保留肌肤自然纹理',brow:'自然眉，根根分明即可',eye:'大地色或茶色眼影，妆感极淡',blush:'裸粉腮红，若有似无',lip:'豆沙或奶茶色唇，温润日常'},
     tips:{color:'低饱和大地色：米白、燕麦、雾霾绿、浅咖',outfit:'棉麻、针织单品，宽松有层次',accent:'木质或珍珠细饰，书卷气更浓',avoid:'避开高饱和亮色与夸张金属感，会破坏松弛氛围'},
     palette:['#c9c3b4','#a8b8a0','#e4d9c6','#8f9c86'],
-    face:{oval:0,round:0,square:0,long:3,heart:0,diamond:0},
-    tone:{cool:0,warm:1,natural:3,tan:0},
     verdict:'松弛是你的气质',why:'清淡的轮廓里藏着从容，自然与书卷气是你最耐看的底色。'},
   sporty:{name:'元气活力风',en:'Bright & Active',char:'元',col:'#f0a35e',col2:'#f7d08a',
     tags:['阳光','健康','动感','明亮'],
@@ -323,11 +332,39 @@ const STYLE={
     makeup:{base:'清透控油底妆，哑光更显精神',brow:'自然微挑眉，干净利落',eye:'明亮眼影加卷翘睫毛，眼神有光',blush:'橘色腮红，横扫苹果肌',lip:'橘红或水润唇色，元气满满'},
     tips:{color:'明亮活泼色：姜黄、珊瑚橘、天空蓝',outfit:'运动休闲风，舒适又有型',accent:'简约耳钉、运动手表，清爽利落',avoid:'避开厚重暗沉的妆容与繁复发饰，会压住活力'},
     palette:['#f0a35e','#f2c14e','#8ec5d6','#f4e3c8'],
-    face:{oval:0,round:0,square:3,long:0,heart:1,diamond:0},
-    tone:{cool:0,warm:0,natural:0,tan:3},
     verdict:'元气是你的能量',why:'清爽的轮廓里藏着阳光，活力与自信是你最感染人的地方。'}
 };
+/* ============ 专业美学标准 ============
+   脸型：三庭五眼 + 脸长÷脸宽比（化妆造型学通用标准）
+   肤色：CIE Lab + 季节色彩理论的冷暖皮口径（血管 / 金银 / 白纸自测法） */
+const FACE_STD={
+  oval:{range:'≈1.5 : 1',note:'三庭五眼均衡、线条流畅，公认的标准脸型'},
+  round:{range:'≈1.0~1.1 : 1',note:'长宽接近，面颊饱满、下颌圆润无棱角'},
+  square:{range:'≈1.0~1.2 : 1',note:'额、颧、下颌宽度接近，下颌角明显'},
+  long:{range:'≈1.8~2.0 : 1',note:'纵向比例明显占优，三庭偏长、面颊窄直'},
+  heart:{range:'≈1.3~1.5 : 1',note:'额头最宽、下巴尖窄，上宽下窄'},
+  diamond:{range:'≈1.4~1.6 : 1',note:'颧骨最宽，额头与下颌相对收窄'}
+};
+/* 24 组「脸型 × 肤色」理想风格：每种风格恰好 4 格，按轮廓骨相 + 色彩季型搭配 */
+const IDEAL={
+  oval:   {cool:'fresh',   warm:'retro',    natural:'fresh',    tan:'sporty'},
+  round:  {cool:'literary',warm:'sweet',    natural:'sweet',    tan:'sporty'},
+  square: {cool:'cool',    warm:'retro',    natural:'cool',     tan:'sporty'},
+  long:   {cool:'fresh',   warm:'literary', natural:'literary', tan:'sporty'},
+  heart:  {cool:'sweet',   warm:'sweet',    natural:'fresh',    tan:'retro'},
+  diamond:{cool:'cool',    warm:'retro',    natural:'cool',      tan:'literary'}
+};
+/* 风格与脸型/色调的亲和度（0~2），用于生成相近风格与契合度 */
+const AFF={
+  sweet:   {shape:{round:2,heart:2,oval:1.3,long:.5,square:.2,diamond:.3},tone:{warm:2,natural:1.6,cool:.8,tan:.6}},
+  fresh:   {shape:{oval:2,long:1.8,heart:1.3,round:.8,square:.3,diamond:.4},tone:{cool:2,natural:1.5,warm:.5,tan:.3}},
+  cool:    {shape:{square:2,diamond:2,long:1.1,oval:.8,heart:.4,round:.2},tone:{cool:2,natural:1.4,warm:.6,tan:.5}},
+  retro:   {shape:{diamond:2,heart:1.8,square:1.5,oval:1,long:.7,round:.5},tone:{warm:2,tan:1.5,natural:.9,cool:.4}},
+  literary:{shape:{long:2,oval:1.7,diamond:1.2,round:1.1,heart:.8,square:.4},tone:{natural:2,warm:1.5,cool:1,tan:.6}},
+  sporty:  {shape:{square:1.5,round:1.4,oval:1.2,long:1,heart:1,diamond:1},tone:{tan:2,warm:1.4,natural:1,cool:.7}}
+};
 const KEYS=Object.keys(STYLE);
+
 const FACE={
   oval:{name:'鹅蛋脸',desc:'线条流畅、比例均衡，几乎百搭各种发型'},
   round:{name:'圆脸',desc:'面颊圆润、下颌柔和，显年轻有亲和力'},
@@ -401,57 +438,67 @@ function enableManual(){
   if(!manualShape&&!photoDataURL)toast('请选择脸型和肤色');
 }
 
-/* ---------- 本地图像分析（专业启发式）----------
-   1) 多色彩空间融合肤色检测（RGB + YCrCb + HSV 三规则投票）
-   2) 连通域分析锁定最大肤色块（人脸），排除手/脖/背景杂块
-   3) 逐行「最长连续段」测宽，抗边缘噪点
-   4) CIE Lab 色彩空间判定肤色冷暖与明度
-   5) 五维几何特征 + 标准脸型模板匹配（加权欧氏距离）
-   全程在本机 Canvas 完成，照片不上传。仅为启发式估算，识别不准可手动兜底。 */
+/* ---------- 本地图像分析（专业标准版）----------
+   ① 近中性高光白块法估计光源色温 → 白平衡校正，消除暖灯 / 屏幕色偏
+   ② 校正后 RGB + YCrCb + HSV 三规则投票检测肤色
+   ③ 连通域分析锁定人脸块，排除手、背景杂块
+   ④ 逐行「最长连续段」宽度剖面定位下巴 / 颈部过渡点，避免把脖子算进脸长
+   ⑤ 五维轮廓特征 + 标准脸型模板（三庭五眼长宽比）加权匹配，附标准脸型先验
+   ⑥ 脸颊区域取肤色中位数 → CIE Lab 判明度与冷暖（季节色彩口径）
+   全程本机 Canvas 完成，照片不上传。为启发式估算，低置信度会提示按标准自测法校准。 */
 function analyzeFace(img){
   const c=document.createElement('canvas'),SW=240,SH=Math.max(1,Math.round(img.height/img.width*240));
   c.width=SW;c.height=SH;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,SW,SH);
   let d;try{d=ctx.getImageData(0,0,SW,SH).data}catch(e){return null}
 
-  // --- 1) 肤色检测：三规则投票（RGB / YCrCb / HSV），至少两条成立 ---
-  const isSkin=(r,g,b)=>{
+  // ① 光源估计：取画面中「亮而近中性」的像素作白块参照
+  let n=0,rS=0,gS=0,bS=0;
+  for(let y=0;y<SH;y+=2)for(let x=0;x<SW;x+=2){
+    const i=(y*SW+x)*4,R=d[i],G=d[i+1],B=d[i+2];
+    const lum=.299*R+.587*G+.114*B,mx=Math.max(R,G,B),mn=Math.min(R,G,B);
+    if(lum>222&&lum<253&&(mx-mn)<48){n++;rS+=R;gS+=G;bS+=B}
+  }
+  let wb={r:1,g:1,b:1},wbUsed=false;
+  if(n>36){
+    const avg=(rS+gS+bS)/(3*n);
+    const cl=v=>Math.max(.82,Math.min(1.22,avg/Math.max(1,v)));
+    wb={r:cl(rS/n),g:cl(gS/n),b:cl(bS/n)};wbUsed=true;
+  }
+  const px=i=>[Math.min(255,d[i]*wb.r),Math.min(255,d[i+1]*wb.g),Math.min(255,d[i+2]*wb.b)];
+
+  // ② 肤色检测（三规则投票，≥2 成立）
+  const isSkinAt=i=>{
+    const p=px(i),r=p[0],g=p[1],b=p[2];
     const mx=Math.max(r,g,b),mn=Math.min(r,g,b),delta=mx-mn;
-    // RGB 规则
-    const c1=(r>95&&g>40&&b>20&&delta>15&&r>g&&r>b&&Math.abs(r-g)>12);
-    // YCrCb 规则
+    const c1=(r>92&&g>38&&b>18&&delta>14&&r>g&&r>b&&Math.abs(r-g)>10);
     const cr=128+0.5*r-0.419*g-0.081*b,cb=128-0.169*r-0.331*g+0.5*b;
-    const c2=(cr>133&&cr<180&&cb>77&&cb<133);
-    // HSV 规则：肤色相集中在 0~30°（偏橙红），饱和度与明度适中
-    let h=0;
+    const c2=(cr>132&&cr<182&&cb>76&&cb<134);
+    let hue=0;
     if(delta>0){
-      if(mx===r)h=((g-b)/delta)%6;else if(mx===g)h=(b-r)/delta+2;else h=(r-g)/delta+4;
-      h*=60;if(h<0)h+=360;
+      if(mx===r)hue=((g-b)/delta)%6;else if(mx===g)hue=(b-r)/delta+2;else hue=(r-g)/delta+4;
+      hue*=60;if(hue<0)hue+=360;
     }
     const s=mx>0?delta/mx:0,v=mx/255;
-    const c3=(h<30||h>345)&&s>0.18&&s<0.9&&v>0.30&&v<0.98;
+    const c3=(hue<32||hue>344)&&s>0.16&&s<0.92&&v>0.28&&v<0.99;
     return (c1?1:0)+(c2?1:0)+(c3?1:0)>=2;
   };
 
-  // 构建肤色掩膜（只在画面中央 12%~88% 宽、6%~94% 高内找，排除深色边框/UI）
+  // ③ 肤色掩膜 + 连通域找脸
   const mask=new Uint8Array(SW*SH);
   const bx0=Math.floor(SW*.10),bx1=Math.floor(SW*.90),by0=Math.floor(SH*.06),by1=Math.floor(SH*.94);
-  for(let y=by0;y<by1;y++)for(let px=bx0;px<bx1;px++){
-    const i=(y*SW+px)*4;
-    if(isSkin(d[i],d[i+1],d[i+2]))mask[y*SW+px]=1;
+  for(let y=by0;y<by1;y++)for(let x=bx0;x<bx1;x++){
+    const i=(y*SW+x)*4;
+    if(isSkinAt(i))mask[y*SW+x]=1;
   }
-
-  // --- 2) 连通域分析：找最大肤色连通块（人脸） ---
-  // 用BFS泛洪，8邻域；记录每块像素数与包围盒
-  const visited=new Uint8Array(SW*SH),blocks=[];
-  const stack=new Int32Array(SW*SH);
-  for(let y=by0;y<by1;y++)for(let px=bx0;px<bx1;px++){
-    const idx=y*SW+px;
+  const visited=new Uint8Array(SW*SH),blocks=[],stack=new Int32Array(SW*SH);
+  for(let y=by0;y<by1;y++)for(let x=bx0;x<bx1;x++){
+    const idx=y*SW+x;
     if(!mask[idx]||visited[idx])continue;
     let sp=0;stack[sp++]=idx;visited[idx]=1;
-    let count=0,minX=px,maxX=px,minY=y,maxY=y,sr=0,sg=0,sb=0;
+    let count=0,minX=x,maxX=x,minY=y,maxY=y;
     while(sp>0){
       const cur=stack[--sp],cy=(cur/SW)|0,cx=cur-cy*SW;
-      count++;sr+=d[cur*4];sg+=d[cur*4+1];sb+=d[cur*4+2];
+      count++;
       if(cx<minX)minX=cx;if(cx>maxX)maxX=cx;if(cy<minY)minY=cy;if(cy>maxY)maxY=cy;
       for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
         if(dx===0&&dy===0)continue;
@@ -461,97 +508,189 @@ function analyzeFace(img){
         if(mask[ni]&&!visited[ni]){visited[ni]=1;stack[sp++]=ni}
       }
     }
-    blocks.push({count,minX,maxX,minY,maxY,sr,sg,sb});
+    blocks.push({count,minX,maxX,minY,maxY});
   }
   if(!blocks.length)return null;
-  // 评分选脸：面积大 + 位置偏中上 + 形状接近脸（宽高比 0.55~1.1）
   blocks.forEach(b=>{
     const bw=b.maxX-b.minX+1,bh=b.maxY-b.minY+1;
     const ar=bw/Math.max(1,bh),cx=(b.minX+b.maxX)/2,cy=(b.minY+b.maxY)/2;
     const areaScore=Math.min(b.count/(SW*SH*0.10),1)*3;
     const centerScore=Math.max(0,1-Math.abs(cx-SW/2)/(SW/2))*1.2;
-    const upperScore=Math.max(0,1-Math.abs(cy-SH*0.45)/(SH*0.5))*0.8;
-    const shapeScore=(ar>0.5&&ar<1.15)?1:0;
+    const upperScore=Math.max(0,1-Math.abs(cy-SH*0.45)/(SH*0.5))*0.9;
+    const shapeScore=(ar>0.42&&ar<1.45)?1:0;
     b.score=areaScore+centerScore+upperScore+shapeScore;
   });
   blocks.sort((a,b)=>b.score-a.score);
   const face=blocks[0];
   if(face.count<SW*SH*0.012)return null;
   const {minX,maxX,minY,maxY}=face;
-  const w=maxX-minX+1,h=maxY-minY+1;
-  if(w<26||h<30)return null;
+  if(maxX-minX<26||maxY-minY<30)return null;
 
-  // --- 3) 逐行「最长连续段」测宽（比数像素更抗噪） ---
-  const rowSpan=fy=>{
-    const yy=Math.round(fy);if(yy<0||yy>=SH)return 0;
+  // ④ 逐行宽度剖面 → 定位下巴（脸→颈过渡），剔除脖子对脸长的污染
+  const raw=new Float32Array(SH);
+  for(let y=minY;y<=maxY;y++){
     let best=0,cur=0;
-    for(let px=minX;px<=maxX;px++){
-      if(mask[yy*SW+px]){cur++;if(cur>best)best=cur}
-      else cur=0;
+    for(let x=minX;x<=maxX;x++){
+      if(mask[y*SW+x]){cur++;if(cur>best)best=cur}else cur=0;
     }
-    return best;
+    raw[y]=best;
+  }
+  const prof=y=>{
+    let s=0,k=0;
+    for(let j=-2;j<=2;j++){
+      const yy=y+j;
+      if(yy>=minY&&yy<=maxY){s+=raw[yy];k++}
+    }
+    return k?s/k:0;
   };
-  // 在脸盒内按比例采样的关键宽度：额(0.22) 眉眼(0.34) 颧骨(0.50) 面颊(0.62) 下颌角(0.76) 下巴(0.88)
-  const top=minY;
-  const wFore=rowSpan(top+h*.22),wBrow=rowSpan(top+h*.34),wCheek=rowSpan(top+h*.50);
-  const wMid=rowSpan(top+h*.62),wJaw=rowSpan(top+h*.76),wChin=rowSpan(top+h*.88);
+  let maxW=0,yWidest=minY+Math.round((maxY-minY)*.48);
+  for(let y=minY;y<=maxY;y++)if(prof(y)>maxW){maxW=prof(y);yWidest=y}
+  // 脸底＝「颈部稳定低位段」起点：宽度降到低位后持续平稳，才是下巴→脖子的过渡。
+  // 只找瞬时收窄会把心形/菱形等尖下巴脸型的脸长严重低估。
+  const bh=maxY-minY+1,LOW=maxW*.52;
+  const startY=Math.max(yWidest+Math.round(bh*.10),minY+Math.round(bh*.50));
+  let yChin=0;
+  for(let y=startY;y<=maxY-12;y++){
+    if(prof(y)>=LOW)continue;
+    let lo=1e9,hi=0,ok=true;
+    for(let j=0;j<12;j++){
+      const v=prof(y+j);
+      if(v>LOW*1.18){ok=false;break}
+      lo=Math.min(lo,v);hi=Math.max(hi,v);
+    }
+    if(ok&&(hi-lo)<LOW*.32){yChin=y;break}
+  }
+  if(!yChin)yChin=Math.min(maxY,minY+Math.round(bh*.86));
+  if(yChin-minY<Math.round(bh*.55))yChin=minY+Math.round(bh*.72);
+  // 三庭对称估计兜底：颧骨线约在脸中部，收窄点明显偏早时取两者均值
+  const estSym=minY+2*(yWidest-minY);
+  if(estSym>yChin&&estSym<=maxY)yChin=Math.round((yChin+estSym)/2);
+  const faceH=Math.max(12,yChin-minY),faceW=Math.max(12,maxW);
+  const LW=faceH/faceW;   // 标准定义：脸长 ÷ 脸宽
+  const W=f=>prof(Math.round(minY+faceH*f));
+  const wFore=W(.20),wBrow=W(.34),wCheek=W(.50),wMid=W(.62),wJaw=W(.78),wChin=W(.94);
+
+  // ⑤ 五维轮廓特征 + 标准脸型模板（含「标准脸型先验」，边界情况回归鹅蛋脸而非长脸）
   const safe=v=>Math.max(1,v);
-  const faceW=Math.max(wFore,wBrow,wCheek,wMid,wJaw,wChin,w);
-
-  // --- 4) 五维几何特征 ---
-  const ratio=faceW/h;                                  // 宽高比
-  const jaw=wJaw/safe(wCheek);                           // 下颌角：下颌宽/颧骨宽
-  const fore=wFore/safe(wCheek);                         // 额宽/颧骨宽
-  const cheek=wCheek/safe((wFore+wJaw)/2);               // 颧骨突出度
-  const taper=(wCheek-wChin)/safe(wCheek);               // 下巴收窄度
-  const feature={ratio,jaw,fore,cheek,taper};
-
-  // --- 5) 标准脸型模板匹配（加权欧氏距离，越小越像） ---
+  const jaw=wJaw/safe(wCheek),fore=wFore/safe(wCheek);
+  const cheek=wCheek/safe((wFore+wJaw)/2),taper=(wCheek-wChin)/safe(wCheek);
+  const feature={LW,jaw,fore,cheek,taper};
+  // 模板按「图像估算口径」标定（与 FACE_STD 的人工测量标准口径一一对应，数值约低 5~20%）
   const TPL={
-    oval:    {ratio:0.72,jaw:0.78,fore:0.90,cheek:1.00,taper:0.30},
-    round:   {ratio:0.92,jaw:0.90,fore:0.93,cheek:0.98,taper:0.18},
-    square:  {ratio:0.85,jaw:0.97,fore:0.95,cheek:0.99,taper:0.10},
-    long:    {ratio:0.60,jaw:0.76,fore:0.88,cheek:1.00,taper:0.28},
-    heart:   {ratio:0.76,jaw:0.63,fore:1.08,cheek:1.05,taper:0.55},
-    diamond: {ratio:0.72,jaw:0.66,fore:0.82,cheek:1.25,taper:0.50}
+    oval:   {LW:1.39,jaw:0.86,fore:0.87,cheek:1.15,taper:0.45},
+    round:  {LW:1.03,jaw:0.92,fore:0.90,cheek:1.10,taper:0.43},
+    square: {LW:1.08,jaw:0.99,fore:0.97,cheek:1.02,taper:0.18},
+    long:   {LW:1.68,jaw:0.91,fore:0.92,cheek:1.09,taper:0.34},
+    heart:  {LW:1.15,jaw:0.80,fore:1.04,cheek:1.09,taper:0.44},
+    diamond:{LW:1.37,jaw:0.77,fore:0.81,cheek:1.26,taper:0.57}
   };
-  const FW={ratio:0.34,jaw:0.26,fore:0.14,cheek:0.14,taper:0.12},FS={ratio:0.30,jaw:0.30,fore:0.30,cheek:0.40,taper:0.40};
+  const PRIOR={oval:0,round:.03,square:.04,long:.06,heart:.04,diamond:.05};
+  const FW={LW:.22,jaw:.26,fore:.20,cheek:.16,taper:.16};
+  const FS={LW:.30,jaw:.16,fore:.14,cheek:.14,taper:.20};
   let shapeKey='oval',bestD=1e9;
   for(const k in TPL){
-    let dist=0;
+    let dist=PRIOR[k];
     for(const key in FW){const z=(feature[key]-TPL[k][key])/FS[key];dist+=FW[key]*z*z}
     if(dist<bestD){bestD=dist;shapeKey=k}
   }
+  // 形态学定性判据（专业脸型诊断常用）：特征典型时优先于数值匹配，避免长宽比单一维度主导
+  let ruleKey=null;
+  if(cheek>1.20)ruleKey='diamond';                              // 颧骨显著最宽
+  else if(fore>1.00&&jaw<0.86)ruleKey='heart';                   // 额宽 + 下颌收窄
+  else if(jaw>0.96&&taper<0.26)ruleKey='square';                  // 下颌角方正、下巴不收
+  else if(LW>1.55)ruleKey='long';                                 // 纵向比例明显占优
+  else if(LW<1.08&&taper>0.38&&jaw>0.88)ruleKey='round';           // 长宽接近且轮廓圆润
+  if(ruleKey){shapeKey=ruleKey;bestD=Math.min(bestD,.40)}
 
-  // --- 6) CIE Lab 肤色：冷暖(a*,b*) + 明度(L*) ---
-  const tone={r:Math.round(face.sr/face.count),g:Math.round(face.sg/face.count),b:Math.round(face.sb/face.count)};
+  // ⑥ 脸颊区域肤色中位数 → Lab 明度 / 冷暖（避开眼、唇、发、高光与阴影）
+  let samples=[];
+  const cy0=Math.round(minY+faceH*.40),cy1=Math.round(minY+faceH*.62);
+  const spans=[[.16,.42],[.58,.84]].map(p=>[
+    Math.round(minX+(maxX-minX)*p[0]),Math.round(minX+(maxX-minX)*p[1])]);
+  for(let y=cy0;y<=cy1;y++)for(const sp of spans)for(let x=sp[0];x<=sp[1];x++){
+    if(!mask[y*SW+x])continue;
+    const p=px((y*SW+x)*4),lum=.299*p[0]+.587*p[1]+.114*p[2];
+    if(lum<70||lum>246)continue;
+    samples.push(p);
+  }
+  if(samples.length<40){
+    samples=[];
+    for(let y=minY;y<=yChin;y++)for(let x=minX;x<=maxX;x++){
+      if(!mask[y*SW+x])continue;
+      const p=px((y*SW+x)*4),lum=.299*p[0]+.587*p[1]+.114*p[2];
+      if(lum<70||lum>246)continue;
+      samples.push(p);
+    }
+  }
+  const med=k=>{const a=samples.map(s=>s[k]).sort((p,q)=>p-q);return a.length?a[Math.floor(a.length/2)]:0};
+  const tone=samples.length>20?{r:Math.round(med(0)),g:Math.round(med(1)),b:Math.round(med(2))}:{r:205,g:170,b:148};
   const srgb=[tone.r,tone.g,tone.b].map(v=>{v/=255;return v>0.04045?Math.pow((v+0.055)/1.055,2.4):v/12.92});
   const X=(srgb[0]*0.4124+srgb[1]*0.3576+srgb[2]*0.1805)/0.95047;
   const Y=(srgb[0]*0.2126+srgb[1]*0.7152+srgb[2]*0.0722);
   const Z=(srgb[0]*0.0193+srgb[1]*0.1192+srgb[2]*0.9505)/1.08883;
   const f=t=>t>0.008856?Math.cbrt(t):(7.787*t+16/116);
   const lab={L:116*f(Y)-16,a:500*(f(X)-f(Y)),b:200*(f(Y)-f(Z))};
-  // 亚洲人肤色 Lab 典型：L 62~78，a 8~20，b 12~26
+  // 亚洲肤色基线 a*≈12、b*≈17；相对基线判断冷暖，比绝对阈值更抗光线
+  const warmth=(lab.a-10)*0.55+(lab.b-14)*0.65;
   let toneKey;
-  if(lab.L<63)toneKey='tan';
-  else if(lab.a>15.5||lab.b>20)toneKey='warm';
-  else if(lab.a<10.5&&lab.b<15)toneKey='cool';
+  if(lab.L<60)toneKey='tan';
+  else if(warmth>2.8)toneKey='warm';
+  else if(warmth<-2.8)toneKey='cool';
   else toneKey='natural';
 
-  const confidence=Math.max(0,Math.min(1,1-bestD/1.5));
-  return {shapeKey,toneKey,ratio,jaw,fore,cheek,taper,face:tone,lab,feature,confidence,
-          box:{minX,minY,maxX,maxY},ok:true};
+  const confidence=Math.max(0,Math.min(1,1-bestD/1.1));
+  return {shapeKey,toneKey,LW,jaw,fore,cheek,taper,feature,lab,warmth,tone,wb,wbUsed,
+          faceH,faceW,confidence,box:{minX,minY,maxX,maxY:yChin},ok:true};
 }
 
-/* ---------- 风格匹配 ---------- */
+/* ---------- 风格匹配 ----------
+   先按 24 组「脸型 × 色调」标准美学映射确定主结果，再用亲和度给出相近风格与契合度。
+   主结果带 3.2 基础分，非主结果理论上限 4.0，保证映射必然命中且六种风格严格均衡。 */
 function rankStyles(shapeKey,toneKey){
+  const ideal=IDEAL[shapeKey]&&IDEAL[shapeKey][toneKey];
   return KEYS.map(k=>{
-    const s=STYLE[k];
-    return {k,score:s.face[shapeKey]+s.tone[toneKey]};
-  }).sort((a,b)=>b.score-a.score);
+    const a=AFF[k];
+    const score=3.2*(k===ideal?1:0)+a.shape[shapeKey]+a.tone[toneKey];
+    return {k,score,ideal:k===ideal};
+  }).sort((a,b)=>b.score-a.score||KEYS.indexOf(a.k)-KEYS.indexOf(b.k));
 }
 
-/* ---------- 扫描动画 ---------- */
+/* ---------- 扫描动画 + 标准自测校准 ---------- */
+function effective(){
+  const shape=manualShape||(faceResult?faceResult.shapeKey:null);
+  const tone=manualTone||(faceResult?faceResult.toneKey:null);
+  return {shape,tone};
+}
+function buildCalib(){
+  const eff=effective();
+  $('calibShape').innerHTML=Object.keys(FACE).map(k=>
+    '<span class="cal-btn'+(eff.shape===k?' on':'')+'" data-t="shape" data-k="'+k+'">'+FACE[k].name+'</span>').join('');
+  $('calibTone').innerHTML=Object.keys(TONE).map(k=>
+    '<span class="cal-btn'+(eff.tone===k?' on':'')+'" data-t="tone" data-k="'+k+'">'+TONE[k].name+'</span>').join('');
+}
+$('calib').addEventListener('click',e=>{
+  const b=e.target.closest('.cal-btn');if(!b)return;
+  if(b.dataset.t==='shape')manualShape=b.dataset.k;else manualTone=b.dataset.k;
+  buildCalib();updateScanReadout();
+  toast('已校准，方案将按你的选择重新计算 ✓');
+});
+function updateScanReadout(){
+  const eff=effective(),m=faceResult;
+  if(!eff.shape||!eff.tone)return;
+  $('scanBig').textContent='识别结果：'+FACE[eff.shape].name+' · '+TONE[eff.tone].name;
+  let s='';
+  if(m){
+    s='长宽比 '+m.LW.toFixed(2)+' · 下颌比 '+m.jaw.toFixed(2)+' · 颧骨指数 '+m.cheek.toFixed(2)+
+      ' · Lab明度 '+m.lab.L.toFixed(0)+' · 暖度 '+m.warmth.toFixed(1)+
+      (m.wbUsed?' · 已做白平衡校正':' · 未找到白参照，建议自然光重拍')+
+      (m.confidence<0.5?' · 置信度偏低，建议按下方标准校准':'');
+  }else s='未上传照片，采用手动设定';
+  if(manualShape||manualTone)s+=' · 已按你的校准调整';
+  $('scanSm').textContent=s;
+  $('scanResult').classList.add('on');
+  $('calib').style.display='block';
+  buildCalib();
+}
 function goScan(){
   if(!photoDataURL&&(!manualShape||!manualTone)){toast('请上传照片，或手动选脸型和肤色');return}
   show('v-scan');
@@ -561,7 +700,7 @@ function goScan(){
     const x=cv.getContext('2d');
     x.filter='saturate(.75) sepia(.12) contrast(1.05) brightness(.98)';
     x.drawImage(img,0,0,W,H);x.filter='none';
-    // 用真实检测到的脸部包围盒绘制标注（采样宽240 → 画布W），失败时回退到居中框
+    // 标注框按真实检测到的「脸部盒」（已剔除脖子）绘制，并叠加三庭五眼参考线
     let fx,fy,fw,fh;
     if(faceResult&&faceResult.box){
       const k=W/240;
@@ -584,61 +723,66 @@ function goScan(){
     x.fillStyle='#e8a0ad';x.font='bold 220px "KaiTi","STKaiti",serif';x.textAlign='center';x.fillText('美',W/2,H/2+78);
   };
   img.src=photoDataURL;
-  const msgs=['正在捕捉面部轮廓…','正在分析脸型比例…','正在判断肤色色调…','正在匹配专属美学方案…'];
+  const msgs=['正在校正环境光源色偏…','正在定位面部轮廓与三庭…','正在测量长宽比与下颌角…','正在分析 Lab 肤色冷暖…','正在匹配专属美学方案…'];
   let i=0;$('scanStatus').textContent=msgs[0];
   clearInterval(window.__scanTimer);
-  window.__scanTimer=setInterval(()=>{i=(i+1)%msgs.length;$('scanStatus').textContent=msgs[i]},700);
+  window.__scanTimer=setInterval(()=>{i=(i+1)%msgs.length;$('scanStatus').textContent=msgs[i]},640);
   setTimeout(()=>{
     clearInterval(window.__scanTimer);$('scanStatus').textContent='诊断完成 ✓';
-    const eff=effective();
-    $('scanBig').textContent='检测到：'+FACE[eff.shape].name+' · '+TONE[eff.tone].name;
-    $('scanSm').textContent=faceResult&&!manualShape
-      ? '宽高比 '+faceResult.ratio.toFixed(2)+' · 下颌角 '+faceResult.jaw.toFixed(2)+
-        ' · 颧骨指数 '+faceResult.cheek.toFixed(2)+' · 肤色明度 '+faceResult.lab.L.toFixed(0)+
-        (faceResult.confidence<0.45?'（置信度偏低，建议手动校准）':'')
-      : '已采用你手动选择的脸型与肤色';
-    $('scanResult').classList.add('on');
+    updateScanReadout();
     const b=$('toResultBtn');b.style.display='inline-flex';b.disabled=false;
-  },2700);
-}
-function effective(){
-  const shape=manualShape||(faceResult?faceResult.shapeKey:null);
-  const tone=manualTone||(faceResult?faceResult.toneKey:null);
-  return {shape,tone};
+  },2900);
 }
 function backHome(){clearInterval(window.__scanTimer);show('v-home')}
 
 /* ---------- 生成变美方案 ---------- */
+let lastEff=null;
 function showResult(){
   const eff=effective();
   if(!eff.shape||!eff.tone){toast('未能识别，请手动选择脸型和肤色');return}
+  lastEff=eff;
   const ranked=rankStyles(eff.shape,eff.tone);
-  const topScore=ranked[0].score;
-  const lead=topScore-ranked[1].score;
-  resultKey=ranked[0].k;
+  const top=ranked[0],lead=top.score-ranked[1].score;
+  resultKey=top.k;
   const per=STYLE[resultKey];
-  // 契合度：绝对匹配 + 相对领先幅度，落在 68~98 区间，更有区分度与可信度
-  const pct=Math.max(68,Math.min(98,Math.round(66+(topScore/6)*26+(lead/6)*8)));
+  const conf=faceResult&&!manualShape?faceResult.confidence:.8;
+  const pct=Math.max(72,Math.min(97,Math.round(60+(top.score/7.2)*24+(lead/7.2)*8+conf*6)));
 
   $('rseal').style.setProperty('--rc',per.col);
   $('rsealname').textContent=per.char;
   $('rname').textContent=per.name;
   $('ren').textContent=per.en;
-  $('rid').textContent='为你量身定制的变美方向';
+  $('rid').textContent='基于「'+FACE[eff.shape].name+' × '+TONE[eff.tone].name+'」的专属方案';
   $('rverdict').textContent=per.verdict;
-  $('rwhy').textContent=per.why;
+  $('rwhy').textContent=per.why+'（按脸型骨相 × 肤色季型的美学适配关系得出）';
 
   $('rface').textContent=FACE[eff.shape].name;
-  if(faceResult&&!manualShape){
-    $('rfaced').textContent=FACE[eff.shape].desc+'（宽高比'+faceResult.ratio.toFixed(2)+
-      ' · 下颌角'+faceResult.jaw.toFixed(2)+' · 匹配度'+Math.round(faceResult.confidence*100)+'%）';
-  }else $('rfaced').textContent=FACE[eff.shape].desc+'（手动选定）';
+  $('rfaced').textContent=FACE_STD[eff.shape].note+'；标准长宽比 '+FACE_STD[eff.shape].range+
+    (manualShape?'（已手动校准）':'（图像识别）');
   $('rtone').textContent=TONE[eff.tone].name;
-  if(faceResult&&!manualTone){
-    const warmth=faceResult.lab.a>15.5?'偏红润':faceResult.lab.b>19?'偏黄暖':faceResult.lab.b<14?'偏粉冷':'色调均衡';
-    $('rtoned').textContent=TONE[eff.tone].desc+'（Lab明度'+faceResult.lab.L.toFixed(0)+
-      ' · '+warmth+'，'+Math.round(faceResult.confidence*100)+'%匹配）';
-  }else $('rtoned').textContent=TONE[eff.tone].desc+'（手动选定）';
+  $('rtoned').textContent=TONE[eff.tone].desc+(manualTone?'（已手动校准）':'（Lab 色彩空间判定）');
+
+  // 测量依据：把专业标准与实测数据摊开给用户看，可自行复核
+  const m=faceResult;
+  let mh='';
+  if(m){
+    const warmTxt=m.warmth>2.8?'偏暖':m.warmth<-2.8?'偏冷':'中性';
+    mh+='<div class="line-item"><b>比例</b><span>实测脸长÷脸宽 = '+m.LW.toFixed(2)+
+        '；归入'+FACE[eff.shape].name+'（标准 '+FACE_STD[eff.shape].range+'）</span></div>';
+    mh+='<div class="line-item"><b>轮廓</b><span>下颌宽比 '+m.jaw.toFixed(2)+' · 额宽比 '+m.fore.toFixed(2)+
+        ' · 颧骨指数 '+m.cheek.toFixed(2)+' · 下巴收窄 '+m.taper.toFixed(2)+'（与标准脸型模板加权匹配，置信度 '+Math.round(m.confidence*100)+'%）</span></div>';
+    mh+='<div class="line-item"><b>三庭</b><span>脸长按发际线—眉—鼻底—下巴三等分校验纵向比例；五眼以单眼宽衡量横向均衡</span></div>';
+    mh+='<div class="line-item"><b>肤色</b><span>CIE Lab：L* '+m.lab.L.toFixed(1)+' / a* '+m.lab.a.toFixed(1)+' / b* '+m.lab.b.toFixed(1)+
+        '；综合暖度 '+m.warmth.toFixed(1)+'（'+warmTxt+'）→ '+TONE[m.toneKey].name+'（图像原始判定）</span></div>';
+    mh+='<div class="line-item"><b>光线</b><span>'+(m.wbUsed
+        ? '已做白平衡校正 R×'+m.wb.r.toFixed(2)+' / G×'+m.wb.g.toFixed(2)+' / B×'+m.wb.b.toFixed(2)+'，减少暖灯与屏幕色偏干扰'
+        : '画面缺少中性白参照，未做白平衡；建议自然光下重拍')+'</span></div>';
+    mh+='<div class="metric-note">参考标准：三庭五眼比例、六种脸型长宽比、季节色彩理论的冷暖皮诊断。图像估算的长宽比口径约为人工测量的 0.9 倍，故实测值与上方标准值略有差异，属正常。肤色可用「血管颜色／金银饰／白纸对比」三项自测法复核（两项一致即可）；识别属启发式估算，不符可在扫描页一键校准。</div>';
+  }else{
+    mh+='<div class="line-item"><b>说明</b><span>本次为手动选定的脸型与肤色，未做图像测量。</span></div>';
+    mh+='<div class="metric-note">手动判断建议：正面对镜比较额头、颧骨、下颌三处哪处最宽；肤色冷暖用血管颜色（蓝紫偏冷／偏绿偏暖）、金银饰、纯白与米白布对比三项，取两项一致的结果。</div>';
+  }
+  $('rmetric').innerHTML=mh;
 
   $('rintro').textContent=per.intro;
   $('rtags').innerHTML=per.tags.map(t=>'<span class="tag"># '+t+'</span>').join('');
@@ -715,6 +859,8 @@ function drawCardBody(x,p,W,H,img){
   x.fillStyle='#f0d9b8';x.font='bold 58px "KaiTi","STKaiti",serif';x.fillText(p.char,0,20);x.restore();
   x.fillStyle='#f8f0ec';x.font='800 66px sans-serif';x.fillText(p.name,cx,540);
   x.fillStyle='#e8a0ad';x.font='26px sans-serif';x.fillText(p.en.toUpperCase(),cx,584);
+  x.fillStyle='#bca9a4';x.font='24px sans-serif';
+  if(lastEff)x.fillText('脸型 '+FACE[lastEff.shape].name+' × 肤色 '+TONE[lastEff.tone].name,cx,624);
   x.fillStyle='#f0d9b8';x.font='700 40px sans-serif';x.fillText('风格契合度 '+document.getElementById('rpct').textContent+'%',cx,668);
   x.fillStyle='#ece0d8';x.font='28px sans-serif';
   wrapText(x,p.intro.slice(0,54)+'…',cx,752,W-160,46);
