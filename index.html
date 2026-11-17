@@ -401,53 +401,146 @@ function enableManual(){
   if(!manualShape&&!photoDataURL)toast('请选择脸型和肤色');
 }
 
-/* ---------- 本地图像分析：肤色定位 + 脸型 + 肤色色调 ---------- */
+/* ---------- 本地图像分析（专业启发式）----------
+   1) 多色彩空间融合肤色检测（RGB + YCrCb + HSV 三规则投票）
+   2) 连通域分析锁定最大肤色块（人脸），排除手/脖/背景杂块
+   3) 逐行「最长连续段」测宽，抗边缘噪点
+   4) CIE Lab 色彩空间判定肤色冷暖与明度
+   5) 五维几何特征 + 标准脸型模板匹配（加权欧氏距离）
+   全程在本机 Canvas 完成，照片不上传。仅为启发式估算，识别不准可手动兜底。 */
 function analyzeFace(img){
-  const c=document.createElement('canvas'),SW=220,SH=Math.max(1,Math.round(img.height/img.width*SW));
-  c.width=SW;c.height=SH;const x=c.getContext('2d');x.drawImage(img,0,0,SW,SH);
-  let d;try{d=x.getImageData(0,0,SW,SH).data}catch(e){return null}
+  const c=document.createElement('canvas'),SW=240,SH=Math.max(1,Math.round(img.height/img.width*240));
+  c.width=SW;c.height=SH;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,SW,SH);
+  let d;try{d=ctx.getImageData(0,0,SW,SH).data}catch(e){return null}
+
+  // --- 1) 肤色检测：三规则投票（RGB / YCrCb / HSV），至少两条成立 ---
   const isSkin=(r,g,b)=>{
-    const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
-    const rgb=(r>95&&g>40&&b>20&&mx-mn>15&&Math.abs(r-g)>15&&r>g&&r>b);
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b),delta=mx-mn;
+    // RGB 规则
+    const c1=(r>95&&g>40&&b>20&&delta>15&&r>g&&r>b&&Math.abs(r-g)>12);
+    // YCrCb 规则
     const cr=128+0.5*r-0.419*g-0.081*b,cb=128-0.169*r-0.331*g+0.5*b;
-    const ycc=(cr>133&&cr<180&&cb>77&&cb<130);
-    return rgb||ycc;
-  };
-  let minX=SW,minY=SH,maxX=0,maxY=0,cnt=0,sr=0,sg=0,sb=0;
-  const y0=Math.floor(SH*.08),y1=Math.floor(SH*.9),x0=Math.floor(SW*.18),x1=Math.floor(SW*.82);
-  for(let y=y0;y<y1;y++)for(let px=x0;px<x1;px++){
-    const i=(y*SW+px)*4;
-    if(isSkin(d[i],d[i+1],d[i+2])){
-      cnt++;sr+=d[i];sg+=d[i+1];sb+=d[i+2];
-      if(px<minX)minX=px;if(px>maxX)maxX=px;if(y<minY)minY=y;if(y>maxY)maxY=y;
+    const c2=(cr>133&&cr<180&&cb>77&&cb<133);
+    // HSV 规则：肤色相集中在 0~30°（偏橙红），饱和度与明度适中
+    let h=0;
+    if(delta>0){
+      if(mx===r)h=((g-b)/delta)%6;else if(mx===g)h=(b-r)/delta+2;else h=(r-g)/delta+4;
+      h*=60;if(h<0)h+=360;
     }
-  }
-  const area=cnt/(SW*SH),w=maxX-minX,h=maxY-minY;
-  if(area<0.015||w<24||h<24)return null;
-  const rowW=fy=>{let n=0,yy=Math.round(fy);for(let px=minX;px<=maxX;px++){const i=(yy*SW+px)*4;if(isSkin(d[i],d[i+1],d[i+2]))n++}return n};
-  const upper=rowW(minY+h*.20),middle=rowW(minY+h*.50),lower=rowW(minY+h*.80);
-  const ratio=w/h,jaw=upper/Math.max(1,lower),cheek=middle/Math.max(1,(upper+lower)/2);
+    const s=mx>0?delta/mx:0,v=mx/255;
+    const c3=(h<30||h>345)&&s>0.18&&s<0.9&&v>0.30&&v<0.98;
+    return (c1?1:0)+(c2?1:0)+(c3?1:0)>=2;
+  };
 
-  // 肤色色调：冷暖 + 明暗
-  const tone=cnt?{r:Math.round(sr/cnt),g:Math.round(sg/cnt),b:Math.round(sb/cnt)}:null;
-  let toneKey='natural';
-  if(tone){
-    const lum=(tone.r+tone.g+tone.b)/3,diff=tone.b-tone.r;
-    if(lum<158)toneKey='tan';
-    else if(diff>6)toneKey='cool';
-    else if(diff<-9)toneKey='warm';
-    else toneKey='natural';
+  // 构建肤色掩膜（只在画面中央 12%~88% 宽、6%~94% 高内找，排除深色边框/UI）
+  const mask=new Uint8Array(SW*SH);
+  const bx0=Math.floor(SW*.10),bx1=Math.floor(SW*.90),by0=Math.floor(SH*.06),by1=Math.floor(SH*.94);
+  for(let y=by0;y<by1;y++)for(let px=bx0;px<bx1;px++){
+    const i=(y*SW+px)*4;
+    if(isSkin(d[i],d[i+1],d[i+2]))mask[y*SW+px]=1;
   }
 
-  // 脸型判定
-  let shapeKey;
-  if(ratio<0.70)shapeKey='long';
-  else if(cheek>1.10)shapeKey='diamond';
-  else if(jaw>1.14)shapeKey='heart';
-  else if(ratio>1.02||jaw>0.98&&ratio>0.95)shapeKey='round';
-  else if(jaw<0.9)shapeKey='square';
-  else shapeKey='oval';
-  return {shapeKey,toneKey,ratio,jaw,cheek,tone,ok:true};
+  // --- 2) 连通域分析：找最大肤色连通块（人脸） ---
+  // 用BFS泛洪，8邻域；记录每块像素数与包围盒
+  const visited=new Uint8Array(SW*SH),blocks=[];
+  const stack=new Int32Array(SW*SH);
+  for(let y=by0;y<by1;y++)for(let px=bx0;px<bx1;px++){
+    const idx=y*SW+px;
+    if(!mask[idx]||visited[idx])continue;
+    let sp=0;stack[sp++]=idx;visited[idx]=1;
+    let count=0,minX=px,maxX=px,minY=y,maxY=y,sr=0,sg=0,sb=0;
+    while(sp>0){
+      const cur=stack[--sp],cy=(cur/SW)|0,cx=cur-cy*SW;
+      count++;sr+=d[cur*4];sg+=d[cur*4+1];sb+=d[cur*4+2];
+      if(cx<minX)minX=cx;if(cx>maxX)maxX=cx;if(cy<minY)minY=cy;if(cy>maxY)maxY=cy;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        if(dx===0&&dy===0)continue;
+        const ny=cy+dy,nx=cx+dx;
+        if(ny<by0||ny>=by1||nx<bx0||nx>=bx1)continue;
+        const ni=ny*SW+nx;
+        if(mask[ni]&&!visited[ni]){visited[ni]=1;stack[sp++]=ni}
+      }
+    }
+    blocks.push({count,minX,maxX,minY,maxY,sr,sg,sb});
+  }
+  if(!blocks.length)return null;
+  // 评分选脸：面积大 + 位置偏中上 + 形状接近脸（宽高比 0.55~1.1）
+  blocks.forEach(b=>{
+    const bw=b.maxX-b.minX+1,bh=b.maxY-b.minY+1;
+    const ar=bw/Math.max(1,bh),cx=(b.minX+b.maxX)/2,cy=(b.minY+b.maxY)/2;
+    const areaScore=Math.min(b.count/(SW*SH*0.10),1)*3;
+    const centerScore=Math.max(0,1-Math.abs(cx-SW/2)/(SW/2))*1.2;
+    const upperScore=Math.max(0,1-Math.abs(cy-SH*0.45)/(SH*0.5))*0.8;
+    const shapeScore=(ar>0.5&&ar<1.15)?1:0;
+    b.score=areaScore+centerScore+upperScore+shapeScore;
+  });
+  blocks.sort((a,b)=>b.score-a.score);
+  const face=blocks[0];
+  if(face.count<SW*SH*0.012)return null;
+  const {minX,maxX,minY,maxY}=face;
+  const w=maxX-minX+1,h=maxY-minY+1;
+  if(w<26||h<30)return null;
+
+  // --- 3) 逐行「最长连续段」测宽（比数像素更抗噪） ---
+  const rowSpan=fy=>{
+    const yy=Math.round(fy);if(yy<0||yy>=SH)return 0;
+    let best=0,cur=0;
+    for(let px=minX;px<=maxX;px++){
+      if(mask[yy*SW+px]){cur++;if(cur>best)best=cur}
+      else cur=0;
+    }
+    return best;
+  };
+  // 在脸盒内按比例采样的关键宽度：额(0.22) 眉眼(0.34) 颧骨(0.50) 面颊(0.62) 下颌角(0.76) 下巴(0.88)
+  const top=minY;
+  const wFore=rowSpan(top+h*.22),wBrow=rowSpan(top+h*.34),wCheek=rowSpan(top+h*.50);
+  const wMid=rowSpan(top+h*.62),wJaw=rowSpan(top+h*.76),wChin=rowSpan(top+h*.88);
+  const safe=v=>Math.max(1,v);
+  const faceW=Math.max(wFore,wBrow,wCheek,wMid,wJaw,wChin,w);
+
+  // --- 4) 五维几何特征 ---
+  const ratio=faceW/h;                                  // 宽高比
+  const jaw=wJaw/safe(wCheek);                           // 下颌角：下颌宽/颧骨宽
+  const fore=wFore/safe(wCheek);                         // 额宽/颧骨宽
+  const cheek=wCheek/safe((wFore+wJaw)/2);               // 颧骨突出度
+  const taper=(wCheek-wChin)/safe(wCheek);               // 下巴收窄度
+  const feature={ratio,jaw,fore,cheek,taper};
+
+  // --- 5) 标准脸型模板匹配（加权欧氏距离，越小越像） ---
+  const TPL={
+    oval:    {ratio:0.72,jaw:0.78,fore:0.90,cheek:1.00,taper:0.30},
+    round:   {ratio:0.92,jaw:0.90,fore:0.93,cheek:0.98,taper:0.18},
+    square:  {ratio:0.85,jaw:0.97,fore:0.95,cheek:0.99,taper:0.10},
+    long:    {ratio:0.60,jaw:0.76,fore:0.88,cheek:1.00,taper:0.28},
+    heart:   {ratio:0.76,jaw:0.63,fore:1.08,cheek:1.05,taper:0.55},
+    diamond: {ratio:0.72,jaw:0.66,fore:0.82,cheek:1.25,taper:0.50}
+  };
+  const FW={ratio:0.34,jaw:0.26,fore:0.14,cheek:0.14,taper:0.12},FS={ratio:0.30,jaw:0.30,fore:0.30,cheek:0.40,taper:0.40};
+  let shapeKey='oval',bestD=1e9;
+  for(const k in TPL){
+    let dist=0;
+    for(const key in FW){const z=(feature[key]-TPL[k][key])/FS[key];dist+=FW[key]*z*z}
+    if(dist<bestD){bestD=dist;shapeKey=k}
+  }
+
+  // --- 6) CIE Lab 肤色：冷暖(a*,b*) + 明度(L*) ---
+  const tone={r:Math.round(face.sr/face.count),g:Math.round(face.sg/face.count),b:Math.round(face.sb/face.count)};
+  const srgb=[tone.r,tone.g,tone.b].map(v=>{v/=255;return v>0.04045?Math.pow((v+0.055)/1.055,2.4):v/12.92});
+  const X=(srgb[0]*0.4124+srgb[1]*0.3576+srgb[2]*0.1805)/0.95047;
+  const Y=(srgb[0]*0.2126+srgb[1]*0.7152+srgb[2]*0.0722);
+  const Z=(srgb[0]*0.0193+srgb[1]*0.1192+srgb[2]*0.9505)/1.08883;
+  const f=t=>t>0.008856?Math.cbrt(t):(7.787*t+16/116);
+  const lab={L:116*f(Y)-16,a:500*(f(X)-f(Y)),b:200*(f(Y)-f(Z))};
+  // 亚洲人肤色 Lab 典型：L 62~78，a 8~20，b 12~26
+  let toneKey;
+  if(lab.L<63)toneKey='tan';
+  else if(lab.a>15.5||lab.b>20)toneKey='warm';
+  else if(lab.a<10.5&&lab.b<15)toneKey='cool';
+  else toneKey='natural';
+
+  const confidence=Math.max(0,Math.min(1,1-bestD/1.5));
+  return {shapeKey,toneKey,ratio,jaw,fore,cheek,taper,face:tone,lab,feature,confidence,
+          box:{minX,minY,maxX,maxY},ok:true};
 }
 
 /* ---------- 风格匹配 ---------- */
@@ -468,7 +561,14 @@ function goScan(){
     const x=cv.getContext('2d');
     x.filter='saturate(.75) sepia(.12) contrast(1.05) brightness(.98)';
     x.drawImage(img,0,0,W,H);x.filter='none';
-    const fx=W*.30,fy=H*.16,fw=W*.40,fh=H*.68;
+    // 用真实检测到的脸部包围盒绘制标注（采样宽240 → 画布W），失败时回退到居中框
+    let fx,fy,fw,fh;
+    if(faceResult&&faceResult.box){
+      const k=W/240;
+      fx=faceResult.box.minX*k-6;fy=faceResult.box.minY*k-6;
+      fw=(faceResult.box.maxX-faceResult.box.minX+1)*k+12;
+      fh=(faceResult.box.maxY-faceResult.box.minY+1)*k+12;
+    }else{fx=W*.30;fy=H*.16;fw=W*.40;fh=H*.68}
     x.strokeStyle='rgba(240,217,184,.65)';x.lineWidth=2;x.setLineDash([10,8]);
     x.strokeRect(fx,fy,fw,fh);x.setLineDash([]);
     for(let i=1;i<3;i++){const yy=fy+fh*i/3;x.beginPath();x.moveTo(fx,yy);x.lineTo(fx+fw,yy);x.stroke()}
@@ -493,7 +593,9 @@ function goScan(){
     const eff=effective();
     $('scanBig').textContent='检测到：'+FACE[eff.shape].name+' · '+TONE[eff.tone].name;
     $('scanSm').textContent=faceResult&&!manualShape
-      ? '面部宽高比 '+faceResult.ratio.toFixed(2)+' · 轮廓指数 '+faceResult.jaw.toFixed(2)
+      ? '宽高比 '+faceResult.ratio.toFixed(2)+' · 下颌角 '+faceResult.jaw.toFixed(2)+
+        ' · 颧骨指数 '+faceResult.cheek.toFixed(2)+' · 肤色明度 '+faceResult.lab.L.toFixed(0)+
+        (faceResult.confidence<0.45?'（置信度偏低，建议手动校准）':'')
       : '已采用你手动选择的脸型与肤色';
     $('scanResult').classList.add('on');
     const b=$('toResultBtn');b.style.display='inline-flex';b.disabled=false;
@@ -527,9 +629,16 @@ function showResult(){
   $('rwhy').textContent=per.why;
 
   $('rface').textContent=FACE[eff.shape].name;
-  $('rfaced').textContent=FACE[eff.shape].desc;
+  if(faceResult&&!manualShape){
+    $('rfaced').textContent=FACE[eff.shape].desc+'（宽高比'+faceResult.ratio.toFixed(2)+
+      ' · 下颌角'+faceResult.jaw.toFixed(2)+' · 匹配度'+Math.round(faceResult.confidence*100)+'%）';
+  }else $('rfaced').textContent=FACE[eff.shape].desc+'（手动选定）';
   $('rtone').textContent=TONE[eff.tone].name;
-  $('rtoned').textContent=TONE[eff.tone].desc;
+  if(faceResult&&!manualTone){
+    const warmth=faceResult.lab.a>15.5?'偏红润':faceResult.lab.b>19?'偏黄暖':faceResult.lab.b<14?'偏粉冷':'色调均衡';
+    $('rtoned').textContent=TONE[eff.tone].desc+'（Lab明度'+faceResult.lab.L.toFixed(0)+
+      ' · '+warmth+'，'+Math.round(faceResult.confidence*100)+'%匹配）';
+  }else $('rtoned').textContent=TONE[eff.tone].desc+'（手动选定）';
 
   $('rintro').textContent=per.intro;
   $('rtags').innerHTML=per.tags.map(t=>'<span class="tag"># '+t+'</span>').join('');
